@@ -1,4 +1,6 @@
 
+using ApiMetasAnalistas.Context;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 namespace ApiMetasAnalistas
@@ -14,6 +16,11 @@ namespace ApiMetasAnalistas
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            builder.Services.AddDbContext<AppDBContext>(options =>
+                options.UseSqlServer(connectionString));
 
             var app = builder.Build();
 

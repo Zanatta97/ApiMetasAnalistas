@@ -1,0 +1,115 @@
+--reseta a sequence da tabela
+DBCC CHECKIDENT ('analysts', RESEED, 0);
+
+--antes de rodar, inserir a região 1 - Nacional
+INSERT INTO regions (nome)
+VALUES 
+    ('AC'), ('AL'), ('AP'), ('AM'), ('BA'), 
+    ('CE'), ('DF'), ('ES'), ('GO'), ('MA'), 
+    ('MT'), ('MS'), ('MG'), ('PA'), ('PB'), 
+    ('PR'), ('PE'), ('PI'), ('RJ'), ('RN'), 
+    ('RS'), ('RO'), ('RR'), ('SC'), ('SP'), 
+    ('SE'), ('TO');
+
+INSERT INTO holidays ([data], descricao, regiao_id)
+VALUES 
+    -- Feriados Fixos e Móveis de 2026 (Nacionais -> regiao_id = 1)
+    ('2026-01-01', 'Confraternização Universal', 1),
+    ('2026-02-16', 'Carnaval (Segunda-feira)', 1),     -- Ponto Facultativo
+    ('2026-02-17', 'Carnaval (Terça-feira)', 1),       -- Ponto Facultativo
+    ('2026-02-18', 'Quarta-feira de Cinzas', 1),       -- Ponto Facultativo (até 14h)
+    ('2026-04-03', 'Paixão de Cristo (Sexta-feira Santa)', 1),
+    ('2026-04-21', 'Tiradentes', 1),
+    ('2026-05-01', 'Dia do Trabalhador', 1),
+    ('2026-06-04', 'Corpus Christi', 1),               -- Ponto Facultativo/Feriado Municipal em várias cidades
+    ('2026-09-07', 'Independência do Brasil', 1),
+    ('2026-10-12', 'Nossa Senhora Aparecida', 1),
+    ('2026-11-02', 'Finados', 1),
+    ('2026-11-15', 'Proclamação da República', 1),
+    ('2026-12-25', 'Natal', 1);
+
+INSERT INTO holidays ([data], descricao, regiao_id)
+VALUES 
+    ('2026-07-09', 'Revolução Constitucionalista', 26), -- Feriado Estadual em SP
+    ('2026-09-20', 'Revolução Farroupilha', 22);
+	
+	
+INSERT INTO holidays ([data], descricao, regiao_id)
+VALUES 
+    -- Feriados Municipais de Belo Horizonte / MG (Geralmente adotados como regionais)
+    ('2026-08-15', 'Assunção de Nossa Senhora', 14),
+    ('2026-12-08', 'Imaculada Conceição', 14);
+	
+	
+INSERT INTO METAS_DB.dbo.analysts
+(id, nome, usuario, regiao_id, meta_diaria)
+VALUES(1, N'Samuel Zanatta Silva', N'samuel.zanatta', 22, 4);
+INSERT INTO METAS_DB.dbo.analysts
+(id, nome, usuario, regiao_id, meta_diaria)
+VALUES(2, N'Lucas Ody', N'lucas.ody', 22, 4);
+INSERT INTO METAS_DB.dbo.analysts
+(id, nome, usuario, regiao_id, meta_diaria)
+VALUES(3, N'João Marconi dos Santos Filho', N'joao.marconi', 26, 4);
+INSERT INTO METAS_DB.dbo.analysts
+(id, nome, usuario, regiao_id, meta_diaria)
+VALUES(4, N'Douglas Abreu Munhos', N'douglas.munhoz', 26, 4);
+INSERT INTO METAS_DB.dbo.analysts
+(id, nome, usuario, regiao_id, meta_diaria)
+VALUES(5, N'Guilherme Magalhães Lopes', N'guilherme.magalhaes', 14, 4);
+INSERT INTO METAS_DB.dbo.analysts
+(id, nome, usuario, regiao_id, meta_diaria)
+VALUES(6, N'Gabriel Ramos Reolon', N'gabriel.reolon', 14, 4);
+
+
+--Função no SQL para criar aleatoriamente tickets para os analistas
+
+SET NOCOUNT ON;
+
+-- Define as datas de início e fim
+DECLARE @CurrentDate DATETIME2 = '2026-01-02'; -- Começando dia 02 porque dia 01 foi feriado
+DECLARE @EndDate DATETIME2 = '2026-03-04'; -- Data de hoje
+DECLARE @AnalystId INT;
+DECLARE @DailyTickets INT;
+DECLARE @TicketCount INT;
+DECLARE @Fechamento DATETIME2;
+
+-- Loop passando dia por dia
+WHILE @CurrentDate <= @EndDate
+BEGIN
+    -- Ignora finais de semana (tratando nomes em Inglês ou Português dependendo da configuração do seu servidor)
+    IF DATENAME(weekday, @CurrentDate) NOT IN ('Saturday', 'Sunday', 'sábado', 'domingo')
+    BEGIN
+        -- Ignora os feriados específicos deste início de ano de 2026 (Carnaval)
+        IF CAST(@CurrentDate AS DATE) NOT IN ('2026-02-16', '2026-02-17', '2026-02-18')
+        BEGIN
+            
+            -- Loop passando pelos 6 analistas (IDs de 1 a 6)
+            SET @AnalystId = 1;
+            WHILE @AnalystId <= 6
+            BEGIN
+                -- Gera uma quantidade aleatória de tickets para este analista neste dia (entre 1 e 7)
+                SET @DailyTickets = ABS(CHECKSUM(NEWID())) % 7 + 1;
+                
+                SET @TicketCount = 0;
+                -- Loop para inserir cada ticket
+                WHILE @TicketCount < @DailyTickets
+                BEGIN
+                    -- Gera um horário aleatório entre 08:00 e 17:00 para o ticket não ficar às 00:00:00
+                    SET @Fechamento = DATEADD(MINUTE, ABS(CHECKSUM(NEWID())) % 540, DATEADD(HOUR, 8, @CurrentDate));
+                    
+                    INSERT INTO METAS_DB.dbo.tickets (analista_id, data_fechamento)
+                    VALUES (@AnalystId, @Fechamento);
+                    
+                    SET @TicketCount = @TicketCount + 1;
+                END
+                
+                SET @AnalystId = @AnalystId + 1;
+            END
+            
+        END
+    END
+    -- Avança para o próximo dia
+    SET @CurrentDate = DATEADD(DAY, 1, @CurrentDate);
+END
+
+PRINT 'Tickets gerados com sucesso!';
