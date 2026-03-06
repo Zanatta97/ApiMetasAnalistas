@@ -1,5 +1,8 @@
 
 using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.Interfaces;
+using ApiMetasAnalistas.Repositories;
+using ApiMetasAnalistas.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -21,6 +24,12 @@ namespace ApiMetasAnalistas
 
             builder.Services.AddDbContext<AppDBContext>(options =>
                 options.UseSqlServer(connectionString));
+
+            //Repositories
+            builder.Services.AddScoped<IAnalystRepository, AnalystRepository>();
+
+            //Services
+            builder.Services.AddScoped<IAnalystService, AnalystService>();
 
             var app = builder.Build();
 

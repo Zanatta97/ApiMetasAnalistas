@@ -1,0 +1,41 @@
+--reseta a sequence da tabela
+DBCC CHECKIDENT ('analysts', RESEED, 0);
+
+--antes de rodar, inserir a região 1 - Nacional
+INSERT INTO regions (nome)
+VALUES 
+    ('AC'), ('AL'), ('AP'), ('AM'), ('BA'), 
+    ('CE'), ('DF'), ('ES'), ('GO'), ('MA'), 
+    ('MT'), ('MS'), ('MG'), ('PA'), ('PB'), 
+    ('PR'), ('PE'), ('PI'), ('RJ'), ('RN'), 
+    ('RS'), ('RO'), ('RR'), ('SC'), ('SP'), 
+    ('SE'), ('TO');
+
+INSERT INTO holidays ([data], descricao, regiao_id)
+VALUES 
+    -- Feriados Fixos e Móveis de 2026 (Nacionais -> regiao_id = 1)
+    ('2026-01-01', 'Confraternização Universal', 1),
+    ('2026-02-16', 'Carnaval (Segunda-feira)', 1),     -- Ponto Facultativo
+    ('2026-02-17', 'Carnaval (Terça-feira)', 1),       -- Ponto Facultativo
+    ('2026-02-18', 'Quarta-feira de Cinzas', 1),       -- Ponto Facultativo (até 14h)
+    ('2026-04-03', 'Paixão de Cristo (Sexta-feira Santa)', 1),
+    ('2026-04-21', 'Tiradentes', 1),
+    ('2026-05-01', 'Dia do Trabalhador', 1),
+    ('2026-06-04', 'Corpus Christi', 1),               -- Ponto Facultativo/Feriado Municipal em várias cidades
+    ('2026-09-07', 'Independência do Brasil', 1),
+    ('2026-10-12', 'Nossa Senhora Aparecida', 1),
+    ('2026-11-02', 'Finados', 1),
+    ('2026-11-15', 'Proclamação da República', 1),
+    ('2026-12-25', 'Natal', 1);
+
+INSERT INTO holidays ([data], descricao, regiao_id)
+VALUES 
+    ('2026-07-09', 'Revolução Constitucionalista', 26), -- Feriado Estadual em SP
+    ('2026-09-20', 'Revolução Farroupilha', 22);
+	
+	
+INSERT INTO holidays ([data], descricao, regiao_id)
+VALUES 
+    -- Feriados Municipais de Belo Horizonte / MG (Geralmente adotados como regionais)
+    ('2026-08-15', 'Assunção de Nossa Senhora', 14),
+    ('2026-12-08', 'Imaculada Conceição', 14);

@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="ApiMetasAnalistas/ApiMetasAnalistas.csproj" />
+  <Project Path="ClientMetasAnalistas/ClientMetasAnalistas.csproj" Id="e98e629f-59ac-4e58-9ff8-f3c49c78c3c4" />
 </Solution>
