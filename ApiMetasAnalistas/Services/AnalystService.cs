@@ -195,8 +195,7 @@ namespace ApiMetasAnalistas.Services
 
                 foreach (var analyst in analysts)
                 {
-                    var totalDays = GetTargetForPeriod(analyst.Id, startDate, endDate);
-
+                    var totalTarget = GetTargetForPeriod(analyst.Id, startDate, endDate);
                     var ticketsFechados = _repository.TicketCount(analyst.Id, startDate, endDate);
 
                     targetResults.Add(new AnalystResultDTO
@@ -204,11 +203,11 @@ namespace ApiMetasAnalistas.Services
                         AnalistaId = analyst.Id,
                         NomeAnalista = analyst.Nome,
                         RegiaoId = analyst.RegiaoId,
-                        TotalDiasUteis = totalDays,
+                        TotalDiasUteis = AnalystTotalDays(startDate, endDate, analyst),
                         MetaDiaria = analyst.MetaDiaria,
-                        TotalMetaPeriodo = analyst.MetaDiaria * totalDays,
+                        TotalMetaPeriodo = totalTarget,
                         TicketsFechados = ticketsFechados,
-                        PercentualMetaAlcancada = totalDays > 0 ? (decimal)ticketsFechados / (analyst.MetaDiaria * totalDays) * 100m : 0m
+                        PercentualMetaAlcancada = totalTarget > 0 ? (decimal)ticketsFechados / totalTarget * 100m : 0m
 
                     });
 
@@ -221,6 +220,55 @@ namespace ApiMetasAnalistas.Services
 
                 throw;
             }
+        }
+
+        public AnalystResultDTO GetAnalystTargetResults(DateTime startDate, DateTime endDate, Analyst analyst)
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(analyst);
+
+                var totalTarget = GetTargetForPeriod(analyst.Id, startDate, endDate);
+                var ticketsFechados = _repository.TicketCount(analyst.Id, startDate, endDate);
+
+                var targetResults = new AnalystResultDTO
+                {
+                    AnalistaId = analyst.Id,
+                    NomeAnalista = analyst.Nome,
+                    RegiaoId = analyst.RegiaoId,
+                    TotalDiasUteis = AnalystTotalDays(startDate, endDate, analyst),
+                    MetaDiaria = analyst.MetaDiaria,
+                    TotalMetaPeriodo = totalTarget,
+                    TicketsFechados = ticketsFechados,
+                    PercentualMetaAlcancada = totalTarget > 0 ? (decimal)ticketsFechados / totalTarget * 100m : 0m
+
+                };
+
+                return targetResults;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public int AnalystTotalDays(DateTime startDate, DateTime endDate, Analyst analyst)
+        {
+            var totalDays = 0;
+
+            for (int i = 0; startDate.Date.AddDays(i) <= endDate.Date; i++)
+            {
+                var currentDate = startDate.Date.AddDays(i);
+
+                var isHoliday = _repository.IsHoliday(analyst, currentDate);
+
+                var isWeekend = currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday;
+
+                if (!isHoliday && !isWeekend)
+                    totalDays++;
+            }
+            return totalDays;
         }
 
     }

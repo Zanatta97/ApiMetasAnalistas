@@ -6,6 +6,7 @@ namespace ClientMetasAnalistas.Utilidades
 {
     public static class Utils
     {
+        public const string API_URL = "http://localhost:5037/";
         public static void ImprimirAviso(string[] texto, string titulo, bool erro = false)
         {
             int tamanho = texto.Max(s => s.Length) + 6;

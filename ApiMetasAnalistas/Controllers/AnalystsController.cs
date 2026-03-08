@@ -1,4 +1,5 @@
-﻿using ApiMetasAnalistas.Interfaces;
+﻿using ApiMetasAnalistas.DTO;
+using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -149,7 +150,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("target/{id:int}", Name = "GetAnalystTarget")]
-        public ActionResult<int> GetAnalystTarget(int id)
+        public ActionResult<AnalystResultDTO> GetAnalystTarget(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             try
             {
@@ -158,36 +159,15 @@ namespace ApiMetasAnalistas.Controllers
                 if (analyst is null)
                     return NotFound("Analista não encontrado");
 
-                return Ok(new { analyst.MetaDiaria });
+                var targetResult = _service.GetAnalystTargetResults(startDate, endDate, analyst);
+
+                return Ok(targetResult);
             }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao inserir o analista: {e.Message}");
             }
 
-        }
-
-        [HttpGet("target/{id:int}/period/")]
-        public ActionResult<int> GetAnalystTargetForPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
-        {
-            try
-            {
-                if (startDate > endDate)
-                    return BadRequest("A data de início deve ser anterior à data de término");
-
-                if (id <= 0 || startDate == default || endDate == default)
-                    return BadRequest("Parâmetros inválidos");
-
-                return Ok(new { Target = _service.GetTargetForPeriod(id, startDate, endDate) });
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao calcular a meta do analista de ID {id} para o período: {e.Message}");
-            }
         }
 
         [HttpGet("target")]
@@ -213,6 +193,29 @@ namespace ApiMetasAnalistas.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Erro inesperado ao calcular os resultados dos analistas: {e.Message}");
             }
         }
+
+        /*[HttpGet("target/{id:int}/period/")]
+        public ActionResult<int> GetAnalystTargetForPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            try
+            {
+                if (startDate > endDate)
+                    return BadRequest("A data de início deve ser anterior à data de término");
+
+                if (id <= 0 || startDate == default || endDate == default)
+                    return BadRequest("Parâmetros inválidos");
+
+                return Ok(new { Target = _service.GetTargetForPeriod(id, startDate, endDate) });
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao calcular a meta do analista de ID {id} para o período: {e.Message}");
+            }
+        }*/
 
     }
 }

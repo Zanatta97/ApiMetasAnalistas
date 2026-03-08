@@ -14,5 +14,6 @@ namespace ApiMetasAnalistas.Interfaces
         public void Delete(int id);
         public int GetTargetForPeriod(int id, DateTime startDate, DateTime endDate);
         public List<AnalystResultDTO> GetTargetResults(DateTime startDate, DateTime endDate);
+        public AnalystResultDTO GetAnalystTargetResults(DateTime startDate, DateTime endDate, Analyst analyst);
     }
 }
