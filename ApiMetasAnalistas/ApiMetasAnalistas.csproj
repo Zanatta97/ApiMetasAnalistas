@@ -21,4 +21,8 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.13.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Enum\" />
+  </ItemGroup>
+
 </Project>

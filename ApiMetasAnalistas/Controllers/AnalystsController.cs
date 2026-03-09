@@ -18,6 +18,8 @@ namespace ApiMetasAnalistas.Controllers
             _service = service;
         }
 
+        #region CRUD_Operations
+
         [HttpGet]
         public ActionResult<IEnumerable<Analyst>> Get()
         {
@@ -149,6 +151,8 @@ namespace ApiMetasAnalistas.Controllers
             }
         }
 
+        #endregion
+
         [HttpGet("target/{id:int}", Name = "GetAnalystTarget")]
         public ActionResult<AnalystResultDTO> GetAnalystTarget(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
@@ -191,6 +195,24 @@ namespace ApiMetasAnalistas.Controllers
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Erro inesperado ao calcular os resultados dos analistas: {e.Message}");
+            }
+        }
+
+        [HttpGet("exists/{username}")]
+        public ActionResult<bool> UsernameExists(string username)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(username))
+                    return BadRequest("Username inválido");
+
+                var analyst = _service.GetByUserName(username);
+
+                return Ok(analyst is not null);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao verificar existência do username: {e.Message}");
             }
         }
 

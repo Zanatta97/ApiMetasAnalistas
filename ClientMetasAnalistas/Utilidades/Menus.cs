@@ -13,36 +13,15 @@ namespace ClientMetasAnalistas.Utilidades
         {
             "[1] Visualizar Atingimento Geral",
             "[2] Visualizar Atingimento Analista",
+            "[3] Cadastrar/Alterar Analista",
+            "[4] Alterar Meta Analista",
+            "[5] Listar Ocorrencias Analista no Período",
+            "[6] Registrar Ocorrencia Analista",
+            "[7] Listar Feriados",
+            "[8] Registrar Feriado",
             "[0] Finalizar o programa"
         };
-        public static string[] OpcoesMenuPrincipalCompra =
-        {
-            "[1] Adicionar Itens na Compra",
-            "[2] Remover Item da Compra",
-            "[3] Desfazer (Remover último item da compra)",
-            "[0] Finalizar a compra"
-        };
-        public static string[] OpcoesMenuFinalizaCompra =
-        {
-            "[1] Ver e Adicionar Cupom de Desconto",
-            "[2] Selecionar Frete (caso não selecionada será definido como Retirar na Loja)",
-            "[3] Selecionar Formas de Pagamentos",
-            "[4] Cancelar a compra",
-            "[5] Voltar ao menu principal",
-            "[6] Verificar itens no carrinho",
-            "[0] Finalizar a compra e Gerar nota fiscal"
-        };
-
-        public static string[] OpcoesMenuCliente =
-        {
-            "[1] Realizar Nova Compra",
-            "[2] Ver última Compra",
-            "[3] Ver todas as Compraas",
-            "[4] Ver Saldo em Adiantamento",
-            "[5] Ver Pontos de Fidelidade Disponíveis",
-            "[6] Alterar Dados Pessoais",
-            "[0] Sair e voltar ao Menu Principal"
-        };
+        
 
         // MENU NAVEGÁVEL COM SETAS - Roubado da IA como um Teste mas como eu curti eu alterei e ficou.
         public static int CriarMenuNavegavel(string titulo, string[] opcoes, string texto = "", string textofinal = "")

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ClientMetasAnalistas.Utilidades
 {
@@ -307,6 +308,19 @@ namespace ClientMetasAnalistas.Utilidades
                 }
             } while (!dataOk);
             return dataValida;
+        }
+
+        public static void TelaLoading(string mensagem, string titulo)
+        {
+            int tamanho = mensagem.Length + 9;
+            int esquerda = (Console.WindowWidth - tamanho) / 2;
+
+            ImprimirTitulo(titulo);
+            Console.WriteLine(CentralizarTexto($"*{new string('*', tamanho)}*"));
+            esquerda = (tamanho - mensagem.Length - 3) / 2;
+            int direita = esquerda + (tamanho - mensagem.Length - 3 - esquerda * 2);
+            Console.WriteLine(CentralizarTexto($"* {new string(' ', esquerda - 1)}{$"{mensagem.Replace("\r", "").Replace("\n", "").ToUpper().Trim()}..."}{new string(' ', direita - 1)} *"), tamanho);
+            Console.WriteLine(CentralizarTexto($"*{new string('*', tamanho)}*"));
         }
     }
 }
