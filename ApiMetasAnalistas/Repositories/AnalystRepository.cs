@@ -70,7 +70,7 @@ namespace ApiMetasAnalistas.Repositories
             _context.SaveChanges();
         }
 
-        public bool HasOcurrences(int id)
+        public bool HasOccurrences(int id)
         {
             return _context.Occurrences.Any(o => o.AnalistaId == id);
         }
@@ -92,6 +92,11 @@ namespace ApiMetasAnalistas.Repositories
             return _context.Tickets
                         .Where(t => t.AnalystId == id && t.DataFechamento.Date >= startDate.Date && t.DataFechamento.Date <= endDate.Date)
                         .Count();
+        }
+
+        public bool HasOccurrence(int id, DateTime occurrenceDate)
+        {
+            return _context.Occurrences.Where(d => d.DataInicio >= occurrenceDate && d.DataFim <= occurrenceDate).Any(o => o.AnalistaId == id);
         }
 
 

@@ -11,7 +11,7 @@ using System.Windows.Markup;
 
 namespace ClientMetasAnalistas.Services
 {
-    internal class AnalystService : IAnalystService
+    public class AnalystService : IAnalystService
     {
         private readonly HttpClient _httpClient = new HttpClient();
 

@@ -18,9 +18,10 @@ namespace ApiMetasAnalistas.Interfaces
         public void Add(Analyst analyst);
         public void Update(Analyst analyst);
         public void Delete(Analyst analyst);
-        public bool HasOcurrences(int id);
+        public bool HasOccurrences(int id);
         public bool HasTickets(int id);
         public bool IsHoliday(Analyst analyst, DateTime currentDate);
         public int TicketCount(int id, DateTime startDate, DateTime endDate);
+        public bool HasOccurrence(int id, DateTime occurrenceDate);
     }
 }

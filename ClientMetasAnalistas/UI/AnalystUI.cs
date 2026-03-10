@@ -10,7 +10,7 @@ using System.Text.Json.Nodes;
 
 namespace ClientMetasAnalistas.UI
 {
-    internal class AnalystUI
+    public class AnalystUI
     {
         private readonly IAnalystService _service = new AnalystService();
 

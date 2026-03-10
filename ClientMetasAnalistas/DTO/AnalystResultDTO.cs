@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ClientMetasAnalistas.DTO
 {
-    internal class AnalystResultDTO
+    public class AnalystResultDTO
     {
         public int AnalistaId { get; set; }
         public string NomeAnalista { get; set; }

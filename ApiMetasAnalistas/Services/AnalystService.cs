@@ -69,9 +69,9 @@ namespace ApiMetasAnalistas.Services
                 _repository.Add(analyst);
                 return analyst;
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException e)
             {
-                throw new Exception("Erro ao adicionar analista", ex);
+                throw new Exception("Erro ao adicionar analista", e);
             }
         }
 
@@ -110,9 +110,9 @@ namespace ApiMetasAnalistas.Services
                 _repository.Update(existingAnalyst);
                 return existingAnalyst;
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException e)
             {
-                throw new Exception("Erro ao alterar analista", ex);
+                throw new Exception("Erro ao alterar analista", e);
             }
         }
 
@@ -126,7 +126,7 @@ namespace ApiMetasAnalistas.Services
                 throw new KeyNotFoundException($"Analista com ID {id} não encontrado");
             }
 
-            if (_repository.HasOcurrences(existingAnalyst.Id))
+            if (_repository.HasOccurrences(existingAnalyst.Id))
             {
                 throw new InvalidOperationException("Não é possível excluir o analista porque ele tem ocorrências associadas");
             }
@@ -167,7 +167,9 @@ namespace ApiMetasAnalistas.Services
 
                     var isWeekend = currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday;
 
-                    if (!isHoliday && !isWeekend)
+                    var hasOccurrence = _repository.HasOccurrence(analyst.Id, currentDate);
+
+                    if (!isHoliday && !isWeekend && !hasOccurrence)
                         totalDays++;
                 }
 

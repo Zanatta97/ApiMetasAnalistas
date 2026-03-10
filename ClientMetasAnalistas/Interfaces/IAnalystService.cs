@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ClientMetasAnalistas.Interfaces
 {
-    internal interface IAnalystService
+    public interface IAnalystService
     {
         public Task<IEnumerable<AnalystResultDTO>> GetAllAnalystTargetDataAsync(DateTime startDate, DateTime endDate);
         public Task<bool> UsernameExistsAsync(string username);

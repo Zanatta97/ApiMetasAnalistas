@@ -1,4 +1,5 @@
 ﻿using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,28 +11,35 @@ namespace ApiMetasAnalistas.Controllers
     [ApiController]
     public class OccurrencesController : ControllerBase
     {
-        private readonly AppDBContext _context;
+        private readonly IOccurrenceService _service;
 
-        public OccurrencesController(AppDBContext context)
+        public OccurrencesController(IOccurrenceService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Occurrence>> Get()
         {
-            var occurrences = _context.Occurrences.AsNoTracking().Include(a => a.Analista).ToList();
+            try
+            {
+                var occurrences = _service.GetAll();
 
-            if (occurrences is null || occurrences.Count == 0)
-                return NotFound("Nenhuma ocorrência cadastrada no sistema");
+                if (!occurrences.Any())
+                    return NotFound("Nenhuma ocorrência cadastrada no sistema");
 
-            return occurrences;
+                return Ok(occurrences);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao buscar as ocorrências: {e.Message}");
+            }
         }
 
         [HttpGet("{id:int}", Name = "GetOccurrence")]
         public ActionResult<Occurrence> Get(int id)
         {
-            var occurrence = _context.Occurrences.AsNoTracking().Include(a => a.Analista).FirstOrDefault(a => a.Id == id);
+            var occurrence = _service.Occurrences.AsNoTracking().Include(a => a.Analista).FirstOrDefault(a => a.Id == id);
 
             if (occurrence is null)
                 return NotFound("Ocorrência não encontrada");
@@ -42,7 +50,7 @@ namespace ApiMetasAnalistas.Controllers
         [HttpGet("analyst/{idAnalista:int}", Name = "GetByAnalyst")]
         public ActionResult<IEnumerable<Occurrence>> GetByAnalyst(int idAnalista)
         {
-            var occurrences = _context.Occurrences
+            var occurrences = _service.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
                 .Where(o => o.AnalistaId == idAnalista)
@@ -61,8 +69,8 @@ namespace ApiMetasAnalistas.Controllers
             {
                 if (occurrence is null)
                     return BadRequest("Ocorrência inválida");
-                _context.Occurrences.Add(occurrence);
-                _context.SaveChanges();
+                _service.Occurrences.Add(occurrence);
+                _service.SaveChanges();
                 return new CreatedAtRouteResult("GetOccurrence", new { id = occurrence.Id }, occurrence);
             }
             catch (Exception e)
@@ -79,13 +87,13 @@ namespace ApiMetasAnalistas.Controllers
                 if (id != occurrence.Id)
                     return BadRequest("ID da ocorrência não corresponde ao ID do recurso");
 
-                var existingOccurrence = _context.Occurrences.AsNoTracking().FirstOrDefault(o => o.Id == id);
+                var existingOccurrence = _service.Occurrences.AsNoTracking().FirstOrDefault(o => o.Id == id);
                 
                 if (existingOccurrence is null)
                     return NotFound("Ocorrência não encontrada");
                 
-                _context.Occurrences.Update(occurrence);
-                _context.SaveChanges();
+                _service.Occurrences.Update(occurrence);
+                _service.SaveChanges();
                 
                 return Ok(existingOccurrence);
             }
@@ -100,13 +108,13 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
-                var occurrence = _context.Occurrences.FirstOrDefault(o => o.Id == id);
+                var occurrence = _service.Occurrences.FirstOrDefault(o => o.Id == id);
 
                 if (occurrence is null)
                     return NotFound("Ocorrência não encontrada");
 
-                _context.Occurrences.Remove(occurrence);
-                _context.SaveChanges();
+                _service.Occurrences.Remove(occurrence);
+                _service.SaveChanges();
 
                 return Ok($"Ocorrência com ID {id} excluída com sucesso");
             }
@@ -114,6 +122,28 @@ namespace ApiMetasAnalistas.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao excluir a ocorrência: {e.Message}");
             }
+        }
+
+        [HttpGet("period/")]
+        public ActionResult<IEnumerable<Occurrence>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            var occurrences = _service.Occurrences.AsNoTracking().Include(a => a.Analista).ToList();
+
+            if (occurrences is null || occurrences.Count == 0)
+                return NotFound("Nenhuma ocorrência cadastrada no sistema");
+
+            return occurrences;
+        }
+
+        [HttpGet("period/{id:int}")]
+        public ActionResult<Occurrence> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            var occurrence = _service.Occurrences.AsNoTracking().Include(a => a.Analista).FirstOrDefault(a => a.Id == id);
+
+            if (occurrence is null)
+                return NotFound("Ocorrência não encontrada");
+
+            return occurrence;
         }
     }
 }
