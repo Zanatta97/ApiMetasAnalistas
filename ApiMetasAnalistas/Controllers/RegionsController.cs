@@ -1,4 +1,5 @@
 ﻿using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,28 +11,28 @@ namespace ApiMetasAnalistas.Controllers
     [ApiController]
     public class RegionsController : ControllerBase
     {
-        private readonly AppDBContext _context;
+        private readonly IRegionService _service;
 
-        public RegionsController(AppDBContext context)
+        public RegionsController(IRegionService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Region>> Get()
         {
-            var regions = _context.Regions.AsNoTracking().ToList();
+            var regions = _service.GetAll();
 
             if (regions is null)
                 return NotFound("Nenhuma região cadastrada no sistema");
 
-            return regions;
+            return Ok(regions);
         }
 
         [HttpGet("{id:int}", Name = "GetRegion")]
         public ActionResult<Region> Get(int id)
         {
-            var region = _context.Regions.AsNoTracking().FirstOrDefault(r => r.Id == id);
+            var region = _service.GetReadOnly(id);
 
             if (region is null)
                 return NotFound("Região não encontrada");
@@ -47,14 +48,29 @@ namespace ApiMetasAnalistas.Controllers
                 if (region is null)
                     return BadRequest("Região inválida");
 
-                _context.Regions.Add(region);
-                _context.SaveChanges();
+                var newRegion = _service.Add(region);
 
-                return new CreatedAtRouteResult("GetRegion", new { id = region.Id }, region);
+                return new CreatedAtRouteResult("GetRegion", new { id = newRegion.Id }, newRegion);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao inserir a região: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
         }
 
@@ -63,24 +79,29 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
+                if (region is null)
+                    return BadRequest("Região inválida");
+
                 if (id != region.Id)
                     return BadRequest("ID da região não corresponde ao ID do recurso");
 
-                var existingRegion = _context.Regions.FirstOrDefault(r => r.Id == id);
-
-                if (existingRegion is null)
-                    return NotFound("Região não encontrada");
-
-                existingRegion.Nome = region.Nome;
-
-                _context.Regions.Update(existingRegion);
-                _context.SaveChanges();
-
-                return Ok(existingRegion);
+                return Ok(_service.Update(id, region));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao alterar a região: {e.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o analista de ID {id}: {e.Message}");
             }
 
         }
@@ -90,16 +111,25 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
-                var region = _context.Regions.FirstOrDefault(r => r.Id == id);
-                if (region is null)
-                    return NotFound("Região não encontrada");
-                _context.Regions.Remove(region);
-                _context.SaveChanges();
-                return NoContent();
+                _service.Delete(id);
+
+                return Ok($"Região de ID {id} deletada com sucesso");
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao deletar a região: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
 
 

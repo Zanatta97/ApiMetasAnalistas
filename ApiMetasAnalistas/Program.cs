@@ -28,10 +28,16 @@ namespace ApiMetasAnalistas
             //Repositories
             builder.Services.AddScoped<IAnalystRepository, AnalystRepository>();
             builder.Services.AddScoped<IOccurrenceRepository, OccurrenceRepository>();
+            builder.Services.AddScoped<IHolidayRepository, HolidayRepository>();
+            builder.Services.AddScoped<IRegionRepository, RegionRepository>();
+            builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
             //Services
             builder.Services.AddScoped<IAnalystService, AnalystService>();
             builder.Services.AddScoped<IOccurrenceService, OccurrenceService>();
+            builder.Services.AddScoped<IHolidayService, HolidayService>();
+            builder.Services.AddScoped<IRegionService, RegionService>();
+            builder.Services.AddScoped<ITicketService, TicketService>();
 
             var app = builder.Build();
 

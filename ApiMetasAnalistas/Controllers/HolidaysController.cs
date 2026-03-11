@@ -1,4 +1,5 @@
 ﻿using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,48 +11,44 @@ namespace ApiMetasAnalistas.Controllers
     [ApiController]
     public class HolidaysController : ControllerBase
     {
-        private readonly AppDBContext _context;
+        private readonly IHolidayService _service;
 
-        public HolidaysController(AppDBContext context)
+        public HolidaysController(IHolidayService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Holiday>> Get()
         {
-            var holidays = _context.Holidays.AsNoTracking().Include(a => a.Regiao).ToList();
+            var holidays = _service.GetAll();
 
             if (holidays is null)
                 return NotFound("Nenhum feriado cadastrado no sistema");
 
-            return holidays;
+            return Ok(holidays);
         }
 
         [HttpGet("{id:int}", Name = "GetHoliday")]
         public ActionResult<Holiday> Get(int id)
         {
-            var holiday = _context.Holidays.AsNoTracking().Include(a => a.Regiao).FirstOrDefault(a => a.Id == id);
+            var holiday = _service.GetReadOnly(id);
 
             if (holiday is null)
                 return NotFound("Feriado não encontrado");
 
-            return holiday;
+            return Ok(holiday);
         }
 
         [HttpGet("{data:datetime}", Name = "GetHolidayByDate")]
         public ActionResult<IEnumerable<Holiday>> Get(DateTime data)
         {
-            var holidays = _context.Holidays
-                .AsNoTracking()
-                .Include(a => a.Regiao)
-                .Where(h => h.Data.Date == data.Date)
-                .ToList();
+            var holidays = _service.GetByDate(data);
 
-            if (holidays is null || holidays.Count == 0)
+            if (!holidays.Any())
                 return NotFound("Nenhum feriado encontrado para a data especificada");
 
-            return holidays;
+            return Ok(holidays);
         }
 
         [HttpPost]
@@ -61,13 +58,30 @@ namespace ApiMetasAnalistas.Controllers
             {
                 if (holiday is null)
                     return BadRequest("Feriado inválido");
-                _context.Holidays.Add(holiday);
-                _context.SaveChanges();
-                return new CreatedAtRouteResult("GetHoliday", new { id = holiday.Id }, holiday);
+                
+                var newHoliday = _service.Add(holiday);
+
+                return new CreatedAtRouteResult("GetHoliday", new { id = newHoliday.Id }, newHoliday);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao inserir o feriado: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
         }
 
@@ -76,27 +90,29 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
+                if (holiday is null)
+                    return BadRequest("Feriado inválido");
+
                 if (id != holiday.Id)
                     return BadRequest("ID do feriado não corresponde ao ID da URL");
 
-                var existingHoliday = _context.Holidays.FirstOrDefault(h => h.Id == id);
-
-                if (existingHoliday is null)
-                    return NotFound("Feriado não encontrado");
-
-                existingHoliday.Data = holiday.Data;
-                existingHoliday.Descricao = holiday.Descricao;
-                existingHoliday.RegiaoId = holiday.RegiaoId;
-
-                _context.Holidays.Update(existingHoliday);
-                _context.SaveChanges();
-
-                return Ok(existingHoliday);
+                return Ok(_service.Update(id, holiday));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o feriado: {e.Message}");
-
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o Feriado de ID {id}: {e.Message}");
             }
         }
 
@@ -105,19 +121,25 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
-                var holiday = _context.Holidays.FirstOrDefault(h => h.Id == id);
+                _service.Delete(id);
 
-                if (holiday is null)
-                    return NotFound("Feriado não encontrado");
-                
-                _context.Holidays.Remove(holiday);
-                _context.SaveChanges();
-                
                 return Ok($"Feriado de ID {id} deletado com sucesso");
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao deletar o feriado: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
         }
 

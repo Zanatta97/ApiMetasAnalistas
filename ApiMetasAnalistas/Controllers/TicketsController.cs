@@ -1,4 +1,5 @@
 ﻿using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,33 +12,33 @@ namespace ApiMetasAnalistas.Controllers
     public class TicketsController : ControllerBase
     {
 
-        private readonly AppDBContext _context;
+        private readonly ITicketService _service;
 
-        public TicketsController(AppDBContext context)
+        public TicketsController(ITicketService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Ticket>> Get()
         {
-            var tickets = _context.Tickets.AsNoTracking().ToList();
+            var tickets = _service.GetAll();
 
-            if (tickets is null || tickets.Count == 0)
+            if (!tickets.Any())
                 return NotFound("Nenhum ticket cadastrado no sistema");
 
-            return tickets;
+            return Ok(tickets);
         }
 
         [HttpGet("{id:int}", Name = "GetTicket")]
         public ActionResult<Ticket> Get(int id)
         {
-            var ticket = _context.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == id);
+            var ticket = _service.GetReadOnly(id);
 
             if (ticket is null)
                 return NotFound("Ticket não encontrado");
             
-            return ticket;
+            return Ok(ticket);
         }
 
         [HttpPost]
@@ -48,29 +49,41 @@ namespace ApiMetasAnalistas.Controllers
                 if (ticket is null)
                     return BadRequest("Chamado inválido");
 
-                _context.Tickets.Add(ticket);
-                _context.SaveChanges();
-                
-                return new CreatedAtRouteResult("GetTicket", new { id = ticket.Id }, ticket);
+                var newTicket = _service.Add(ticket);
+
+                return new CreatedAtRouteResult("GetTicket", new { id = newTicket.Id }, newTicket);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao inserir o chamado: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
         }
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetTicketsByAnalyst")]
         public ActionResult<IEnumerable<Ticket>> GetByAnalyst(int idAnalista)
         {
-            var tickets = _context.Tickets
-                .AsNoTracking()
-                .Where(t => t.AnalystId == idAnalista)
-                .ToList();
+            var tickets = _service.GetByAnalystId(idAnalista);
 
-            if (tickets is null || tickets.Count == 0)
+            if (!tickets.Any())
                 return NotFound("Nenhum chamado encontrado para o analista especificado");
             
-            return tickets;
+            return Ok(tickets);
         }
 
         [HttpPut("{id:int}")]
@@ -78,25 +91,29 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
-                if (ticket is null || ticket.Id != id)
+                if (ticket is null)
                     return BadRequest("Chamado inválido");
 
-                var existingTicket = _context.Tickets.FirstOrDefault(t => t.Id == id);
+                if (id != ticket.Id)
+                    return BadRequest("ID do chamado não corresponde ao ID fornecido na URL");
                 
-                if (existingTicket is null)
-                    return NotFound("Chamado não encontrado");
-                
-                existingTicket.AnalystId = ticket.AnalystId;
-                existingTicket.DataFechamento = ticket.DataFechamento;
-
-                _context.Tickets.Update(existingTicket);
-                _context.SaveChanges();
-                
-                return Ok(existingTicket);
+                return Ok(_service.Update(id, ticket));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o chamado: {e.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o analista de ID {id}: {e.Message}");
             }
         }
 
@@ -106,21 +123,26 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
-                var ticket = _context.Tickets.FirstOrDefault(t => t.Id == id);
-                if (ticket is null)
-                    return NotFound("Chamado não encontrado");
-                _context.Tickets.Remove(ticket);
-                _context.SaveChanges();
-                return NoContent();
+                _service.Delete(id);
+
+                return Ok($"Ticket com ID {id} deletado com sucesso");
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao excluir o chamado: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
         }
-
-
-
-
-        }
+    }
 }
