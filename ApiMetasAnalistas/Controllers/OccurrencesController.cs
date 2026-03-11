@@ -39,27 +39,23 @@ namespace ApiMetasAnalistas.Controllers
         [HttpGet("{id:int}", Name = "GetOccurrence")]
         public ActionResult<Occurrence> Get(int id)
         {
-            var occurrence = _service.Occurrences.AsNoTracking().Include(a => a.Analista).FirstOrDefault(a => a.Id == id);
+            var occurrence = _service.GetReadOnly(id);
 
             if (occurrence is null)
                 return NotFound("Ocorrência não encontrada");
 
-            return occurrence;
+            return Ok(occurrence);
         }
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetByAnalyst")]
         public ActionResult<IEnumerable<Occurrence>> GetByAnalyst(int idAnalista)
         {
-            var occurrences = _service.Occurrences
-                .AsNoTracking()
-                .Include(a => a.Analista)
-                .Where(o => o.AnalistaId == idAnalista)
-                .ToList();
+            var occurrences = _service.GetByAnalyst(idAnalista);
 
-            if (occurrences is null || occurrences.Count == 0)
+            if (!occurrences.Any())
                 return NotFound("Nenhuma ocorrência encontrada para o analista especificado");
-            
-            return occurrences;
+
+            return Ok(occurrences);
         }
 
         [HttpPost]
@@ -69,13 +65,30 @@ namespace ApiMetasAnalistas.Controllers
             {
                 if (occurrence is null)
                     return BadRequest("Ocorrência inválida");
-                _service.Occurrences.Add(occurrence);
-                _service.SaveChanges();
-                return new CreatedAtRouteResult("GetOccurrence", new { id = occurrence.Id }, occurrence);
+
+                var newOcurrence = _service.Add(occurrence);
+
+                return new CreatedAtRouteResult("GetOccurrence", new { id = newOcurrence.Id }, newOcurrence);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao inserir a ocorrência: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
         }
 
@@ -84,22 +97,29 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
+                if (occurrence is null)
+                    return BadRequest("Ocorrência inválida");
+
                 if (id != occurrence.Id)
                     return BadRequest("ID da ocorrência não corresponde ao ID do recurso");
 
-                var existingOccurrence = _service.Occurrences.AsNoTracking().FirstOrDefault(o => o.Id == id);
-                
-                if (existingOccurrence is null)
-                    return NotFound("Ocorrência não encontrada");
-                
-                _service.Occurrences.Update(occurrence);
-                _service.SaveChanges();
-                
-                return Ok(existingOccurrence);
+                return Ok(_service.Update(id, occurrence));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar a ocorrência: {e.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar a ocorrencia de ID {id}: {e.Message}");
             }
         }
 
@@ -108,42 +128,55 @@ namespace ApiMetasAnalistas.Controllers
         {
             try
             {
-                var occurrence = _service.Occurrences.FirstOrDefault(o => o.Id == id);
-
-                if (occurrence is null)
-                    return NotFound("Ocorrência não encontrada");
-
-                _service.Occurrences.Remove(occurrence);
-                _service.SaveChanges();
+                _service.Delete(id);
 
                 return Ok($"Ocorrência com ID {id} excluída com sucesso");
             }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return Conflict(new { message = e.Message });
+            }
+            catch (DbUpdateException e)
+            {
+                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
+            }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao excluir a ocorrência: {e.Message}");
+                return StatusCode(500, $"Erro inesperado: {e.Message}");
             }
         }
 
         [HttpGet("period/")]
         public ActionResult<IEnumerable<Occurrence>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var occurrences = _service.Occurrences.AsNoTracking().Include(a => a.Analista).ToList();
+            var occurrences = _service.GetByPeriod(startDate, endDate);
 
-            if (occurrences is null || occurrences.Count == 0)
+            if (!occurrences.Any())
                 return NotFound("Nenhuma ocorrência cadastrada no sistema");
 
-            return occurrences;
+            return Ok(occurrences);
         }
 
         [HttpGet("period/{id:int}")]
-        public ActionResult<Occurrence> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public ActionResult<IEnumerable<Occurrence>> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var occurrence = _service.Occurrences.AsNoTracking().Include(a => a.Analista).FirstOrDefault(a => a.Id == id);
+            var occurrences = _service.GetByAnalystPeriod(id, startDate, endDate);
 
-            if (occurrence is null)
+            if (!occurrences.Any())
                 return NotFound("Ocorrência não encontrada");
 
-            return occurrence;
+            return Ok(occurrences);
+        }
+
+        [HttpGet("hasOccurrence/{id:int}")]
+        public ActionResult<bool> HasOcurrences(int id, [FromQuery] DateTime occurrenceDate)
+        {
+            var hasOcurrences = _service.HasOcurrences(id, occurrenceDate);
+            return Ok(hasOcurrences);
         }
     }
 }
