@@ -14,6 +14,8 @@ namespace ClientMetasAnalistas
             int escolha = -1;
 
             var analystUI = new AnalystUI();
+            var occurrenceUI = new OccurrenceUI();
+            var holidayUI = new HolidayUI();
 
             do
             {
@@ -46,16 +48,16 @@ namespace ClientMetasAnalistas
                         await analystUI.UpdateAnalystTarget();
                         break;
                     case 4: //[5] Listar Ocorrencias Analista no Período
-                        Utils.ImprimirAviso(new string[] { "Opção em desenvolvimento" }, tituloPrinipal, true);
+                        await occurrenceUI.ListOccurrencesByAnalystPeriod();
                         break;
                     case 5: //[6] Registrar Ocorrencia Analista
-                        Utils.ImprimirAviso(new string[] { "Opção em desenvolvimento" }, tituloPrinipal, true);
+                        await occurrenceUI.InsertUpdateOccurrence();
                         break;
                     case 6: //[7] Listar Feriados
-                        Utils.ImprimirAviso(new string[] { "Opção em desenvolvimento" }, tituloPrinipal, true);
+                        await holidayUI.ListHolidays();
                         break;
                     case 7: //[8] Registrar Feriado
-                        Utils.ImprimirAviso(new string[] { "Opção em desenvolvimento" }, tituloPrinipal, true);
+                        await holidayUI.InsertUpdateHoliday();
                         break;
                     case 8: //[0] Finalizar o programa
                         Utils.ImprimirAviso(new string[] { "Sistema Finalizado!" }, tituloPrinipal, false);

@@ -38,6 +38,15 @@ namespace ApiMetasAnalistas.Repositories
                 .ToList();
         }
 
+        public IEnumerable<Holiday> GetByPeriod(DateTime startDate, DateTime endDate)
+        {
+            return _context.Holidays
+                .AsNoTracking()
+                .Include(a => a.Regiao)
+                .Where(h => h.Data.Date >= startDate && h.Data.Date <= endDate)
+                .ToList();
+        }
+
         public IEnumerable<Holiday> GetByRegion(int regionId, DateTime data)
         {
             return _context.Holidays

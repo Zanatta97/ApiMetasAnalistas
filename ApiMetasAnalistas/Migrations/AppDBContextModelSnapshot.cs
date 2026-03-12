@@ -55,7 +55,7 @@ namespace ApiMetasAnalistas.Migrations
 
                     b.HasIndex("RegiaoId");
 
-                    b.ToTable("analysts");
+                    b.ToTable("analysts", (string)null);
                 });
 
             modelBuilder.Entity("ApiMetasAnalistas.Models.Holiday", b =>
@@ -85,7 +85,7 @@ namespace ApiMetasAnalistas.Migrations
 
                     b.HasIndex("RegiaoId");
 
-                    b.ToTable("holidays");
+                    b.ToTable("holidays", (string)null);
                 });
 
             modelBuilder.Entity("ApiMetasAnalistas.Models.Occurrence", b =>
@@ -124,7 +124,7 @@ namespace ApiMetasAnalistas.Migrations
 
                     b.HasIndex("AnalistaId");
 
-                    b.ToTable("occurrences");
+                    b.ToTable("occurrences", (string)null);
                 });
 
             modelBuilder.Entity("ApiMetasAnalistas.Models.Region", b =>
@@ -144,7 +144,7 @@ namespace ApiMetasAnalistas.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("regions");
+                    b.ToTable("regions", (string)null);
                 });
 
             modelBuilder.Entity("ApiMetasAnalistas.Models.Ticket", b =>
@@ -168,7 +168,7 @@ namespace ApiMetasAnalistas.Migrations
 
                     b.HasIndex("AnalystId");
 
-                    b.ToTable("tickets");
+                    b.ToTable("tickets", (string)null);
                 });
 
             modelBuilder.Entity("ApiMetasAnalistas.Models.Analyst", b =>

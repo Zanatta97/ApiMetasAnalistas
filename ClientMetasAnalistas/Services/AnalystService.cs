@@ -93,9 +93,9 @@ namespace ClientMetasAnalistas.Services
                     return new AnalystDTO { };
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine($"Erro ao inserir analista: {ex.Message}");
+                Console.WriteLine($"Erro ao inserir analista: {e.Message}");
                 return new AnalystDTO { };
             }
         }

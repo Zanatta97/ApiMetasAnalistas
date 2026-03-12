@@ -156,7 +156,7 @@ namespace ApiMetasAnalistas.Controllers
             var occurrences = _service.GetByPeriod(startDate, endDate);
 
             if (!occurrences.Any())
-                return NotFound("Nenhuma ocorrência cadastrada no sistema");
+                return NotFound("Nenhuma ocorrência cadastrada no período");
 
             return Ok(occurrences);
         }

@@ -10,7 +10,6 @@ namespace ApiMetasAnalistas.Models
         public int Id { get; set; }
 
         [Required]
-        [StringLength(1)]
         [Column("tipo")]
         public int Tipo { get; set; }
 

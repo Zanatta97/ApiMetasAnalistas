@@ -51,6 +51,28 @@ namespace ApiMetasAnalistas.Controllers
             return Ok(holidays);
         }
 
+        [HttpGet("region/{id:int}")]
+        public ActionResult<IEnumerable<Holiday>> GetByRegion(int regionId, [FromQuery] DateTime date)
+        {
+            var holidays = _service.GetByRegion(regionId, date);
+
+            if (!holidays.Any())
+                return NotFound("Nenhum feriado encontrado para o período especificado");
+
+            return Ok(holidays);
+        }
+
+        [HttpGet("period")]
+        public ActionResult<IEnumerable<Holiday>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            var holidays = _service.GetByPeriod(startDate, endDate);
+
+            if (!holidays.Any())
+                return NotFound("Nenhum feriado encontrado para o período especificado");
+
+            return Ok(holidays);
+        }
+
         [HttpPost]
         public ActionResult Post(Holiday holiday)
         {

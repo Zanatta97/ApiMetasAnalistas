@@ -69,7 +69,9 @@ namespace ApiMetasAnalistas.Repositories
             return _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
-                .Where(o => o.AnalistaId == analystId && o.DataInicio >= startDate && o.DataInicio <= endDate)
+                .Where(o => o.AnalistaId == analystId
+                       && o.DataInicio <= endDate
+                       && o.DataFim >= startDate)
                 .ToList();
         }
 
@@ -78,14 +80,16 @@ namespace ApiMetasAnalistas.Repositories
             return _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
-                .Where(o => o.DataInicio >= startDate && o.DataInicio <= endDate)
+                .Where(o => o.DataInicio <= endDate && o.DataFim >= startDate)
                 .ToList();
         }
 
         public bool HasOcurrences(int id, DateTime occurrenceDate)
         {
             return _context.Occurrences
-                .Where(d => d.DataInicio >= occurrenceDate && d.DataFim <= occurrenceDate)
+                .Where(o => o.AnalistaId == id
+                    && o.DataInicio <= occurrenceDate
+                    && o.DataFim >= occurrenceDate)
                 .Any(o => o.AnalistaId == id);
         }
     }

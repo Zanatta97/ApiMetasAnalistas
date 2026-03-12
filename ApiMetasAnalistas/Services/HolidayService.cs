@@ -38,6 +38,11 @@ namespace ApiMetasAnalistas.Services
             return _repository.GetByRegion(regionId, data);
         }
 
+        public IEnumerable<Holiday> GetByPeriod(DateTime startDate, DateTime endDate)
+        {
+            return _repository.GetByPeriod(startDate, endDate);
+        }
+
         public Holiday Add(Holiday holiday)
         {
             ArgumentNullException.ThrowIfNull(holiday);
