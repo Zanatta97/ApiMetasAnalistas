@@ -13,8 +13,7 @@ namespace ClientMetasAnalistas.Services
         private readonly HttpClient _httpClient = new HttpClient();
         public async Task<IEnumerable<OccurrenceDTO>> GetOccurrences(int idAnalyst)
         {
-            var response = await _httpClient.GetFromJsonAsync<IEnumerable<OccurrenceDTO>>(Utils.API_URL + $"Occurrences/{idAnalyst}");
-            return response ?? Enumerable.Empty<OccurrenceDTO>();
+            return await GetOccurrencesByAnalyst(idAnalyst);
         }
 
         public async Task<IEnumerable<OccurrenceDTO>> GetOccurrencesByAnalyst(int idAnalyst)
@@ -29,7 +28,7 @@ namespace ClientMetasAnalistas.Services
             return response ?? new OccurrenceDTO();
         }
 
-        public async Task<OccurrenceDTO> InsertOcurrenceAsync(OccurrenceDTO occurrenceDTO)
+        public async Task<OccurrenceDTO> InsertOccurrenceAsync(OccurrenceDTO occurrenceDTO)
         {
             try
             {
@@ -53,7 +52,7 @@ namespace ClientMetasAnalistas.Services
             }
         }
 
-        public async Task<OccurrenceDTO> UpdateOcurrenceAsync(OccurrenceDTO occurrenceDTO)
+        public async Task<OccurrenceDTO> UpdateOccurrenceAsync(OccurrenceDTO occurrenceDTO)
         {
             try
             {

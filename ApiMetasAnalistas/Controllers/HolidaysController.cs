@@ -51,7 +51,7 @@ namespace ApiMetasAnalistas.Controllers
             return Ok(holidays);
         }
 
-        [HttpGet("region/{id:int}")]
+        [HttpGet("region/{regionId:int}")]
         public ActionResult<IEnumerable<Holiday>> GetByRegion(int regionId, [FromQuery] DateTime date)
         {
             var holidays = _service.GetByRegion(regionId, date);
