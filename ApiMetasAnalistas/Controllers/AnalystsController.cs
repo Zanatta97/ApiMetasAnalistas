@@ -12,232 +12,101 @@ namespace ApiMetasAnalistas.Controllers
     {
 
         private readonly IAnalystService _service;
+        private readonly ILogger<AnalystsController> _logger;
 
-        public AnalystsController(IAnalystService service)
+        public AnalystsController(IAnalystService service, ILogger<AnalystsController> logger)
         {
             _service = service;
+            _logger = logger;
         }
-
-        #region CRUD_Operations
 
         [HttpGet]
         public ActionResult<IEnumerable<Analyst>> Get()
         {
-            try
-            {
-                var analysts = _service.GetAll();
+            var analysts = _service.GetAll();
 
-                if (!analysts.Any())
-                    return NotFound("Nenhum analista cadastrado no sistema");
+            if (!analysts.Any())
+                throw new KeyNotFoundException("Nenhum analista encontrado");
 
-                return Ok(analysts);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao buscar analistas: {e.Message}");
-            }
+            return Ok(analysts);
         }
 
         [HttpGet("{id:int}", Name = "GetAnalyst")]
         public ActionResult<Analyst> Get(int id)
         {
-            try
-            {
-                var analyst = _service.Get(id);
+            var analyst = _service.Get(id);
 
-                if (analyst is null)
-                    return NotFound("Analista não encontrado");
+            if (analyst is null)
+                throw new KeyNotFoundException("Nenhum analista encontrado");
 
-                return Ok(analyst);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao buscar o analista de ID {id}: {e.Message}");
-
-            }
+            return Ok(analyst);
         }
 
         [HttpPost]
         public ActionResult Post(Analyst analyst)
         {
-            try
-            {
-                if (analyst is null)
-                    return BadRequest("Analista inválido");
+            if (analyst is null)
+                throw new ArgumentNullException(nameof(analyst), "Analista inválido");
 
-                var newAnalyst = _service.Add(analyst);
+            var newAnalyst = _service.Add(analyst);
 
-                return new CreatedAtRouteResult("GetAnalyst", new { id = newAnalyst.Id }, newAnalyst);
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
-
+            return new CreatedAtRouteResult("GetAnalyst", new { id = newAnalyst.Id }, newAnalyst);
         }
 
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Analyst analyst)
         {
-            try
-            {
-                if (analyst is null)
-                    return BadRequest("Analista inválido");
+            if (analyst is null)
+                throw new ArgumentNullException(nameof(analyst), "Analista inválido");
 
-                if (id != analyst.Id)
-                    return BadRequest("ID do analista não corresponde ao ID informado no request");
+            if (id != analyst.Id)
+                throw new ArgumentException("O ID do analista na URL deve corresponder ao ID no corpo da requisição");
 
-                return Ok(_service.Update(id, analyst));
-            }
-            catch (ArgumentNullException e)
-            {
-                    return BadRequest(e.Message);
-            }
-            catch (KeyNotFoundException e)
-            {
-                    return NotFound(e.Message);
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o analista de ID {id}: {e.Message}");
-            }
-            
+            return Ok(_service.Update(id, analyst));         
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            try
-            {
-                _service.Delete(id);
+            _service.Delete(id);
 
-                return Ok($"Analista de ID {id} deletado com sucesso");
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
+            return Ok($"Analista de ID {id} deletado com sucesso");
         }
-
-        #endregion
 
         [HttpGet("target/{id:int}", Name = "GetAnalystTarget")]
         public ActionResult<AnalystResultDTO> GetAnalystTarget(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            try
-            {
-                var analyst = _service.Get(id);
+            var analyst = _service.Get(id);
 
-                if (analyst is null)
-                    return NotFound("Analista não encontrado");
+            if (analyst is null)
+                throw new KeyNotFoundException("Nenhum analista encontrado");
 
-                var targetResult = _service.GetAnalystTargetResults(startDate, endDate, analyst);
+            var targetResult = _service.GetAnalystTargetResults(startDate, endDate, analyst);
 
-                return Ok(targetResult);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao inserir o analista: {e.Message}");
-            }
-
+            return Ok(targetResult);
         }
 
         [HttpGet("target")]
         public ActionResult GetTargetResults([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
+            if (startDate > endDate)
+                throw new ArgumentException("A data de início deve ser anterior à data de término");
 
-            try
-            {
-                if (startDate > endDate)
-                    return BadRequest("A data de início deve ser anterior à data de término");
+            if (startDate == default || endDate == default)
+                throw new ArgumentException("Data informada inválida");
 
-                if (startDate == default || endDate == default)
-                    return BadRequest("Parâmetros inválidos");
-
-                return Ok(_service.GetTargetResults(startDate, endDate));
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro inesperado ao calcular os resultados dos analistas: {e.Message}");
-            }
+            return Ok(_service.GetTargetResults(startDate, endDate));
         }
 
         [HttpGet("exists/{username}")]
         public ActionResult<bool> UsernameExists(string username)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(username))
-                    return BadRequest("Username inválido");
+            if (string.IsNullOrWhiteSpace(username))
+                throw new ArgumentException("O nome de usuário não pode ser vazio ou nulo", nameof(username));
 
-                var analyst = _service.GetByUserName(username);
+            var analyst = _service.GetByUserName(username);
 
-                return Ok(analyst is not null);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao verificar existência do username: {e.Message}");
-            }
+            return Ok(analyst is not null);
         }
-
-        /*[HttpGet("target/{id:int}/period/")]
-        public ActionResult<int> GetAnalystTargetForPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
-        {
-            try
-            {
-                if (startDate > endDate)
-                    return BadRequest("A data de início deve ser anterior à data de término");
-
-                if (id <= 0 || startDate == default || endDate == default)
-                    return BadRequest("Parâmetros inválidos");
-
-                return Ok(new { Target = _service.GetTargetForPeriod(id, startDate, endDate) });
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao calcular a meta do analista de ID {id} para o período: {e.Message}");
-            }
-        }*/
-
     }
 }

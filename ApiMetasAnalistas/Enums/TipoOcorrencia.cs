@@ -1,4 +1,4 @@
-﻿namespace ApiMetasAnalistas.Enum
+﻿namespace ApiMetasAnalistas.Enums
 {
     public enum TipoOcorrencia
     {

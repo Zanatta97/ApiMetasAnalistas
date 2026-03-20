@@ -1,4 +1,4 @@
-﻿using ApiMetasAnalistas.Enum;
+﻿using ApiMetasAnalistas.Enums;
 using ApiMetasAnalistas.Models;
 using Microsoft.EntityFrameworkCore;
 
