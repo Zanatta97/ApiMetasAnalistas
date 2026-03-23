@@ -2,19 +2,17 @@
 using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ApiMetasAnalistas.Repositories
 {
-    public class OccurrenceRepository : IOccurrenceRepository
+    public class OccurrenceRepository : Repository<Occurrence>, IOccurrenceRepository
     {
-        private readonly AppDBContext _context;
-
-        public OccurrenceRepository(AppDBContext context)
+        public OccurrenceRepository(AppDBContext context) : base(context)
         {
-            _context = context;
         }
-
-        public IEnumerable<Occurrence> GetAll()
+        //TODO: Finalizar alteração dos repositórios de Região e Ticket
+        public override IEnumerable<Occurrence> GetAll()
         {
             return _context.Occurrences
                 .AsNoTracking()
@@ -22,39 +20,20 @@ namespace ApiMetasAnalistas.Repositories
                 .ToList();
         }
 
-        public Occurrence? GetReadOnly(int id)
+        public override Occurrence? GetReadOnly(Expression<Func<Occurrence, bool>> predicate)
         {
             return _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
-                .FirstOrDefault(o => o.Id == id);
+                .FirstOrDefault(predicate);
         }
 
-        public Occurrence? Get(int id)
+        public override Occurrence? Get(Expression<Func<Occurrence, bool>> predicate)
         {
             return _context.Occurrences
                 .Include(a => a.Analista)
-                .FirstOrDefault(o => o.Id == id);
+                .FirstOrDefault(predicate);
         }
-
-        public void Add(Occurrence occurrence)
-        {
-            _context.Occurrences.Add(occurrence);
-            _context.SaveChanges();
-        }
-
-        public void Update(Occurrence occurrence)
-        {
-            _context.Occurrences.Update(occurrence);
-            _context.SaveChanges();
-        }
-
-        public void Delete(Occurrence occurrence)
-        {
-            _context.Occurrences.Remove(occurrence);
-            _context.SaveChanges();
-        }
-
         public IEnumerable<Occurrence> GetByAnalyst(int analystId)
         {
             return _context.Occurrences

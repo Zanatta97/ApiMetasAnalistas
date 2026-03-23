@@ -1,4 +1,5 @@
 ﻿using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.DTO;
 using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,10 @@ namespace ApiMetasAnalistas.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status500InternalServerError)]
     public class HolidaysController : ControllerBase
     {
         private readonly IHolidayService _service;
@@ -24,7 +29,7 @@ namespace ApiMetasAnalistas.Controllers
             var holidays = _service.GetAll();
 
             if (holidays is null)
-                return NotFound("Nenhum feriado cadastrado no sistema");
+                throw new KeyNotFoundException("Nenhum feriado cadastrado no sistema");
 
             return Ok(holidays);
         }
@@ -35,7 +40,7 @@ namespace ApiMetasAnalistas.Controllers
             var holiday = _service.GetReadOnly(id);
 
             if (holiday is null)
-                return NotFound("Feriado não encontrado");
+                throw new KeyNotFoundException("Feriado não encontrado");
 
             return Ok(holiday);
         }
@@ -46,7 +51,7 @@ namespace ApiMetasAnalistas.Controllers
             var holidays = _service.GetByDate(data);
 
             if (!holidays.Any())
-                return NotFound("Nenhum feriado encontrado para a data especificada");
+                throw new KeyNotFoundException("Nenhum feriado encontrado para a data especificada");
 
             return Ok(holidays);
         }
@@ -57,7 +62,7 @@ namespace ApiMetasAnalistas.Controllers
             var holidays = _service.GetByRegion(regionId, date);
 
             if (!holidays.Any())
-                return NotFound("Nenhum feriado encontrado para o período especificado");
+                throw new KeyNotFoundException("Nenhum feriado encontrado para o período especificado");
 
             return Ok(holidays);
         }
@@ -68,7 +73,7 @@ namespace ApiMetasAnalistas.Controllers
             var holidays = _service.GetByPeriod(startDate, endDate);
 
             if (!holidays.Any())
-                return NotFound("Nenhum feriado encontrado para o período especificado");
+                throw new KeyNotFoundException("Nenhum feriado encontrado para o período especificado");
 
             return Ok(holidays);
         }
@@ -76,93 +81,32 @@ namespace ApiMetasAnalistas.Controllers
         [HttpPost]
         public ActionResult Post(Holiday holiday)
         {
-            try
-            {
-                if (holiday is null)
-                    return BadRequest("Feriado inválido");
+            if (holiday is null)
+                throw new ArgumentNullException("Feriado inválido");
                 
-                var newHoliday = _service.Add(holiday);
+            var newHoliday = _service.Add(holiday);
 
-                return new CreatedAtRouteResult("GetHoliday", new { id = newHoliday.Id }, newHoliday);
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
+            return new CreatedAtRouteResult("GetHoliday", new { id = newHoliday.Id }, newHoliday);
         }
 
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Holiday holiday)
         {
-            try
-            {
-                if (holiday is null)
-                    return BadRequest("Feriado inválido");
+            if (holiday is null)
+                throw new ArgumentNullException("Feriado inválido");
 
-                if (id != holiday.Id)
-                    return BadRequest("ID do feriado não corresponde ao ID da URL");
+            if (id != holiday.Id)
+                throw new ArithmeticException("ID do feriado não corresponde ao ID da URL");
 
-                return Ok(_service.Update(id, holiday));
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o Feriado de ID {id}: {e.Message}");
-            }
+            return Ok(_service.Update(id, holiday));
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            try
-            {
-                _service.Delete(id);
+            _service.Delete(id);
 
-                return Ok($"Feriado de ID {id} deletado com sucesso");
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
+            return Ok($"Feriado de ID {id} deletado com sucesso");
         }
 
 

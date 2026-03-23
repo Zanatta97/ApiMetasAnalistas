@@ -6,31 +6,31 @@ namespace ApiMetasAnalistas.Services
 {
     public class TicketService : ITicketService
     {
-        private readonly ITicketRepository _repository;
+        private readonly IUnityOfWork _repository;
 
-        public TicketService(ITicketRepository repository)
+        public TicketService(IUnityOfWork repository)
         {
             _repository = repository;
         }
 
         public IEnumerable<Ticket> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.TicketRepository.GetAll();
         }
 
         public Ticket? Get(int id)
         {
-            return _repository.Get(id);
+            return _repository.TicketRepository.Get(t => t.Id == id);
         }
 
         public Ticket? GetReadOnly(int id)
         {
-            return _repository.GetReadOnly(id);
+            return _repository.TicketRepository.GetReadOnly(t => t.Id == id);
         }
 
         public IEnumerable<Ticket> GetByAnalystId(int analystId)
         {
-            return _repository.GetByAnalystId(analystId);
+            return _repository.TicketRepository.GetByAnalystId(analystId);
         }
 
         public Ticket Add(Ticket ticket)
@@ -48,7 +48,8 @@ namespace ApiMetasAnalistas.Services
 
             try
             {
-                _repository.Add(ticket);
+                _repository.TicketRepository.Add(ticket);
+                _repository.Commit();
                 return ticket;
             }
             catch (DbUpdateException e)
@@ -61,7 +62,7 @@ namespace ApiMetasAnalistas.Services
         {
             ArgumentNullException.ThrowIfNull(ticket);
 
-            var existingTicket = _repository.Get(id);
+            var existingTicket = _repository.TicketRepository.Get(t => t.Id == id);
 
             if (existingTicket == null)
             {
@@ -73,7 +74,8 @@ namespace ApiMetasAnalistas.Services
                 existingTicket.AnalystId = ticket.AnalystId;
                 existingTicket.DataFechamento = ticket.DataFechamento;
 
-                _repository.Update(existingTicket);
+                _repository.TicketRepository.Update(existingTicket);
+                _repository.Commit();
                 return existingTicket;
             }
             catch (DbUpdateException e)
@@ -84,7 +86,7 @@ namespace ApiMetasAnalistas.Services
 
         public void Delete(int id)
         {
-            var existingTicket = _repository.Get(id);
+            var existingTicket = _repository.TicketRepository.Get(t => t.Id == id);
 
             if (existingTicket == null)
             {
@@ -92,7 +94,8 @@ namespace ApiMetasAnalistas.Services
             }
             try
             {
-                _repository.Delete(existingTicket);
+                _repository.TicketRepository.Delete(existingTicket);
+                _repository.Commit();
             }
             catch (DbUpdateException e)
             {

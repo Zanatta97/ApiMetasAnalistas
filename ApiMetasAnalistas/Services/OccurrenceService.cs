@@ -1,4 +1,4 @@
-﻿using ApiMetasAnalistas.Enum;
+﻿using ApiMetasAnalistas.Enums;
 using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.EntityFrameworkCore;
@@ -7,26 +7,26 @@ namespace ApiMetasAnalistas.Services
 {
     public class OccurrenceService : IOccurrenceService
     {
-        private readonly IOccurrenceRepository _repository;
+        private readonly IUnityOfWork _repository;
 
-        public OccurrenceService(IOccurrenceRepository repository)
+        public OccurrenceService(IUnityOfWork repository)
         {
             _repository = repository;
         }
 
         public IEnumerable<Occurrence> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.OccurrenceRepository.GetAll();
         }
 
         public Occurrence? Get(int id)
         {
-            return _repository.Get(id);
+            return _repository.OccurrenceRepository.Get(o => o.Id == id);
         }
 
         public Occurrence? GetReadOnly(int id)
         {
-            return _repository.GetReadOnly(id);
+            return _repository.OccurrenceRepository.GetReadOnly(o => o.Id == id);
         }
 
         public Occurrence Add(Occurrence occurrence)
@@ -56,7 +56,8 @@ namespace ApiMetasAnalistas.Services
 
             try
             {
-                _repository.Add(occurrence);
+                _repository.OccurrenceRepository.Add(occurrence);
+                _repository.Commit();
                 return occurrence;
             }
             catch (DbUpdateException e)
@@ -69,7 +70,7 @@ namespace ApiMetasAnalistas.Services
         {
             ArgumentNullException.ThrowIfNull(occurrence);
 
-            var existingOccurrence = _repository.Get(id);
+            var existingOccurrence = _repository.OccurrenceRepository.Get(o => o.Id == id);
 
             if (existingOccurrence == null)
             {
@@ -84,7 +85,8 @@ namespace ApiMetasAnalistas.Services
                 existingOccurrence.DataInicio = occurrence.DataInicio;
                 existingOccurrence.DataFim = occurrence.DataFim;
 
-                _repository.Update(existingOccurrence);
+                _repository.OccurrenceRepository.Update(existingOccurrence);
+                _repository.Commit();
                 return existingOccurrence;
             }
             catch (DbUpdateException e)
@@ -95,7 +97,7 @@ namespace ApiMetasAnalistas.Services
 
         public void Delete(int id)
         {
-            var existingOccurrence = _repository.Get(id);
+            var existingOccurrence = _repository.OccurrenceRepository.Get(o => o.Id == id);
 
             if (existingOccurrence == null)
             {
@@ -104,7 +106,8 @@ namespace ApiMetasAnalistas.Services
 
             try
             {
-                _repository.Delete(existingOccurrence);
+                _repository.OccurrenceRepository.Delete(existingOccurrence);
+                _repository.Commit();
             }
             catch (DbUpdateException e)
             {
@@ -114,22 +117,22 @@ namespace ApiMetasAnalistas.Services
 
         public IEnumerable<Occurrence> GetByAnalyst(int analystId)
         {
-            return _repository.GetByAnalyst(analystId);
+            return _repository.OccurrenceRepository.GetByAnalyst(analystId);
         }
 
         public IEnumerable<Occurrence> GetByAnalystPeriod(int analystId, DateTime startDate, DateTime endDate)
         {
-            return _repository.GetByAnalystPeriod(analystId, startDate, endDate);
+            return _repository.OccurrenceRepository.GetByAnalystPeriod(analystId, startDate, endDate);
         }
 
         public IEnumerable<Occurrence> GetByPeriod(DateTime startDate, DateTime endDate)
         {
-            return _repository.GetByPeriod(startDate, endDate);
+            return _repository.OccurrenceRepository.GetByPeriod(startDate, endDate);
         }
 
         public bool HasOcurrences(int id, DateTime occurrenceDate)
         {
-            return _repository.HasOcurrences(id, occurrenceDate);
+            return _repository.OccurrenceRepository.HasOcurrences(id, occurrenceDate);
         }
 
     }

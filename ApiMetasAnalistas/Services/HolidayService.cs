@@ -1,46 +1,47 @@
 ﻿using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ApiMetasAnalistas.Services
 {
     public class HolidayService : IHolidayService
     {
-        private readonly IHolidayRepository _repository;
+        private readonly IUnityOfWork _repository;
 
-        public HolidayService(IHolidayRepository repository)
+        public HolidayService(IUnityOfWork repository)
         {
             _repository = repository;
         }
 
         public IEnumerable<Holiday> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.HolidayRepository.GetAll();
         }
 
         public Holiday? Get(int id)
         {
-            return _repository.Get(id);
+            return _repository.HolidayRepository.Get(h => h.Id == id);
         }
 
         public Holiday? GetReadOnly(int id)
         {
-            return _repository.GetReadOnly(id);
+            return _repository.HolidayRepository.GetReadOnly(h => h.Id == id);
         }
 
         public IEnumerable<Holiday> GetByDate(DateTime data)
         {
-            return _repository.GetByDate(data);
+            return _repository.HolidayRepository.GetByDate(data);
         }
 
         public IEnumerable<Holiday> GetByRegion(int regionId, DateTime data)
         {
-            return _repository.GetByRegion(regionId, data);
+            return _repository.HolidayRepository.GetByRegion(regionId, data);
         }
 
         public IEnumerable<Holiday> GetByPeriod(DateTime startDate, DateTime endDate)
         {
-            return _repository.GetByPeriod(startDate, endDate);
+            return _repository.HolidayRepository.GetByPeriod(startDate, endDate);
         }
 
         public Holiday Add(Holiday holiday)
@@ -61,7 +62,8 @@ namespace ApiMetasAnalistas.Services
 
             try
             {
-                _repository.Add(holiday);
+                _repository.HolidayRepository.Add(holiday);
+                _repository.Commit();
                 return (holiday);
             }
             catch (DbUpdateException e)
@@ -74,7 +76,7 @@ namespace ApiMetasAnalistas.Services
         {
             ArgumentNullException.ThrowIfNull(holiday);
 
-            var existingHoliday = _repository.Get(id);
+            var existingHoliday = _repository.HolidayRepository.Get(h => h.Id == id);
 
             if (existingHoliday == null)
             {
@@ -87,7 +89,8 @@ namespace ApiMetasAnalistas.Services
                 existingHoliday.Descricao = holiday.Descricao;
                 existingHoliday.RegiaoId = holiday.RegiaoId;
 
-                _repository.Update(existingHoliday);
+                _repository.HolidayRepository.Update(existingHoliday);
+                _repository.Commit();
                 return existingHoliday;
             }
             catch (DbUpdateException e)
@@ -98,7 +101,7 @@ namespace ApiMetasAnalistas.Services
 
         public void Delete(int id)
         {
-            var existingHoliday = _repository.Get(id);
+            var existingHoliday = _repository.HolidayRepository.Get(h => h.Id == id);
 
             if (existingHoliday == null)
             {
@@ -107,7 +110,8 @@ namespace ApiMetasAnalistas.Services
 
             try
             {
-                _repository.Delete(existingHoliday);
+                _repository.HolidayRepository.Delete(existingHoliday);
+                _repository.Commit();
             }
             catch (DbUpdateException e)
             {
