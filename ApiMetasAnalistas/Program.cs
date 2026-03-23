@@ -31,13 +31,15 @@ namespace ApiMetasAnalistas
             builder.Services.AddDbContext<AppDBContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            
+
             //Repositories
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<IAnalystRepository, AnalystRepository>();
             builder.Services.AddScoped<IOccurrenceRepository, OccurrenceRepository>();
             builder.Services.AddScoped<IHolidayRepository, HolidayRepository>();
             builder.Services.AddScoped<IRegionRepository, RegionRepository>();
             builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+            builder.Services.AddScoped<IUnityOfWork, UnityOfWork>();
             
             //Services
             builder.Services.AddScoped<IAnalystService, AnalystService>();

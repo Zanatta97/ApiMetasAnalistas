@@ -1,4 +1,5 @@
 ﻿using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.DTO;
 using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,10 @@ namespace ApiMetasAnalistas.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status500InternalServerError)]
     public class RegionsController : ControllerBase
     {
         private readonly IRegionService _service;
@@ -24,7 +29,7 @@ namespace ApiMetasAnalistas.Controllers
             var regions = _service.GetAll();
 
             if (regions is null)
-                return NotFound("Nenhuma região cadastrada no sistema");
+                throw new KeyNotFoundException("Nenhuma região cadastrada no sistema");
 
             return Ok(regions);
         }
@@ -35,7 +40,7 @@ namespace ApiMetasAnalistas.Controllers
             var region = _service.GetReadOnly(id);
 
             if (region is null)
-                return NotFound("Região não encontrada");
+                throw new KeyNotFoundException("Região não encontrada");
 
             return region;
         }
@@ -43,96 +48,32 @@ namespace ApiMetasAnalistas.Controllers
         [HttpPost]
         public ActionResult Post(Region region)
         {
-            try
-            {
-                if (region is null)
-                    return BadRequest("Região inválida");
+            if (region is null)
+                throw new ArgumentNullException("Região inválida");
 
-                var newRegion = _service.Add(region);
+            var newRegion = _service.Add(region);
 
-                return new CreatedAtRouteResult("GetRegion", new { id = newRegion.Id }, newRegion);
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
+            return new CreatedAtRouteResult("GetRegion", new { id = newRegion.Id }, newRegion);
         }
 
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Region region)
         {
-            try
-            {
-                if (region is null)
-                    return BadRequest("Região inválida");
+            if (region is null)
+                throw new ArgumentNullException("Região inválida");
 
-                if (id != region.Id)
-                    return BadRequest("ID da região não corresponde ao ID do recurso");
+            if (id != region.Id)
+                throw new ArgumentException("ID da região não corresponde ao ID do recurso");
 
-                return Ok(_service.Update(id, region));
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o analista de ID {id}: {e.Message}");
-            }
-
+            return Ok(_service.Update(id, region));
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            try
-            {
-                _service.Delete(id);
+            _service.Delete(id);
 
-                return Ok($"Região de ID {id} deletada com sucesso");
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
-
-
+            return Ok($"Região de ID {id} deletada com sucesso");
         }
     }
 }

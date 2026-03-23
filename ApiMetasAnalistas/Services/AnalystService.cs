@@ -7,21 +7,22 @@ namespace ApiMetasAnalistas.Services
 {
     public class AnalystService : IAnalystService
     {
-        private readonly IAnalystRepository _repository;
+        //private readonly IAnalystRepository _repository;
+        private readonly IUnityOfWork _repository;
 
-        public AnalystService(IAnalystRepository repository)
+        public AnalystService(IUnityOfWork repository)
         {
             _repository = repository;
         }
 
         public IEnumerable<Analyst> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.AnalystRepository.GetAll();
         }
 
         public Analyst? Get(int id)
         {
-            return _repository.Get(id);
+            return _repository.AnalystRepository.Get(a => a.Id == id);
         }
 
         /// <summary>
@@ -32,12 +33,12 @@ namespace ApiMetasAnalistas.Services
         /// <returns></returns>
         public Analyst? GetReadOnly(int id)
         {
-            return _repository.GetReadOnly(id);
+            return _repository.AnalystRepository.GetReadOnly(a => a.Id == id);
         }
 
         public Analyst? GetByUserName(string userName)
         {
-            return _repository.GetByUserName(userName);
+            return _repository.AnalystRepository.GetByUserName(userName);
         }
 
         public Analyst Add(Analyst analyst)
@@ -59,14 +60,15 @@ namespace ApiMetasAnalistas.Services
                 throw new ArgumentException($"Valor {analyst.MetaDiaria} inválido para a Meta do analista", nameof(analyst.MetaDiaria));
             }
 
-            if (_repository.GetByUserName(analyst.Usuario) != null)
+            if (_repository.AnalystRepository.GetByUserName(analyst.Usuario) != null)
             {
                 throw new InvalidOperationException($"O nome de usuário {analyst.Usuario} já existe");
             }
 
             try
             {
-                _repository.Add(analyst);
+                _repository.AnalystRepository.Add(analyst);
+                _repository.Commit();
                 return analyst;
             }
             catch (DbUpdateException e)
@@ -107,7 +109,8 @@ namespace ApiMetasAnalistas.Services
                 existingAnalyst.RegiaoId = analyst.RegiaoId;
                 existingAnalyst.MetaDiaria = analyst.MetaDiaria;
 
-                _repository.Update(existingAnalyst);
+                _repository.AnalystRepository.Update(existingAnalyst);
+                _repository.Commit();
                 return existingAnalyst;
             }
             catch (DbUpdateException e)
@@ -126,19 +129,20 @@ namespace ApiMetasAnalistas.Services
                 throw new KeyNotFoundException($"Analista com ID {id} não encontrado");
             }
 
-            if (_repository.HasOccurrences(existingAnalyst.Id))
+            if (_repository.AnalystRepository.HasOccurrences(existingAnalyst.Id))
             {
                 throw new InvalidOperationException("Não é possível excluir o analista porque ele tem ocorrências associadas");
             }
 
-            if (_repository.HasTickets(existingAnalyst.Id))
+            if (_repository.AnalystRepository.HasTickets(existingAnalyst.Id))
             {
                 throw new InvalidOperationException("Não é possível excluir o analista porque ele tem chamados associados");
             }
 
             try
             {
-                _repository.Delete(existingAnalyst);
+                _repository.AnalystRepository.Delete(existingAnalyst);
+                _repository.Commit();
             }
             catch (DbUpdateException e)
             {
@@ -163,11 +167,11 @@ namespace ApiMetasAnalistas.Services
                 {
                     var currentDate = startDate.Date.AddDays(i);
 
-                    var isHoliday = _repository.IsHoliday(analyst, currentDate);
+                    var isHoliday = _repository.AnalystRepository.IsHoliday(analyst, currentDate);
 
                     var isWeekend = currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday;
 
-                    var hasOccurrence = _repository.HasOccurrence(analyst.Id, currentDate);
+                    var hasOccurrence = _repository.AnalystRepository.HasOccurrence(analyst.Id, currentDate);
 
                     if (!isHoliday && !isWeekend && !hasOccurrence)
                         totalDays++;
@@ -188,7 +192,7 @@ namespace ApiMetasAnalistas.Services
         {
             try
             {
-                var analysts = _repository.GetAll();
+                var analysts = _repository.AnalystRepository.GetAll();
 
                 if (!analysts.Any())
                     throw new KeyNotFoundException("Nenhum analista encontrado");
@@ -198,7 +202,7 @@ namespace ApiMetasAnalistas.Services
                 foreach (var analyst in analysts)
                 {
                     var totalTarget = GetTargetForPeriod(analyst.Id, startDate, endDate);
-                    var ticketsFechados = _repository.TicketCount(analyst.Id, startDate, endDate);
+                    var ticketsFechados = _repository.AnalystRepository.TicketCount(analyst.Id, startDate, endDate);
 
                     targetResults.Add(new AnalystResultDTO
                     {
@@ -231,7 +235,7 @@ namespace ApiMetasAnalistas.Services
                 ArgumentNullException.ThrowIfNull(analyst);
 
                 var totalTarget = GetTargetForPeriod(analyst.Id, startDate, endDate);
-                var ticketsFechados = _repository.TicketCount(analyst.Id, startDate, endDate);
+                var ticketsFechados = _repository.AnalystRepository.TicketCount(analyst.Id, startDate, endDate);
 
                 var targetResults = new AnalystResultDTO
                 {
@@ -263,7 +267,7 @@ namespace ApiMetasAnalistas.Services
             {
                 var currentDate = startDate.Date.AddDays(i);
 
-                var isHoliday = _repository.IsHoliday(analyst, currentDate);
+                var isHoliday = _repository.AnalystRepository.IsHoliday(analyst, currentDate);
 
                 var isWeekend = currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday;
 

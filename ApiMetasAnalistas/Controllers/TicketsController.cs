@@ -1,4 +1,5 @@
 ﻿using ApiMetasAnalistas.Context;
+using ApiMetasAnalistas.DTO;
 using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,10 @@ namespace ApiMetasAnalistas.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status500InternalServerError)]
     public class TicketsController : ControllerBase
     {
 
@@ -25,7 +30,7 @@ namespace ApiMetasAnalistas.Controllers
             var tickets = _service.GetAll();
 
             if (!tickets.Any())
-                return NotFound("Nenhum ticket cadastrado no sistema");
+                throw new KeyNotFoundException("Nenhum ticket cadastrado no sistema");
 
             return Ok(tickets);
         }
@@ -36,43 +41,9 @@ namespace ApiMetasAnalistas.Controllers
             var ticket = _service.GetReadOnly(id);
 
             if (ticket is null)
-                return NotFound("Ticket não encontrado");
+                throw new KeyNotFoundException("Ticket não encontrado");
             
             return Ok(ticket);
-        }
-
-        [HttpPost]
-        public ActionResult Post(Ticket ticket)
-        {
-            try
-            {
-                if (ticket is null)
-                    return BadRequest("Chamado inválido");
-
-                var newTicket = _service.Add(ticket);
-
-                return new CreatedAtRouteResult("GetTicket", new { id = newTicket.Id }, newTicket);
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
         }
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetTicketsByAnalyst")]
@@ -81,68 +52,41 @@ namespace ApiMetasAnalistas.Controllers
             var tickets = _service.GetByAnalystId(idAnalista);
 
             if (!tickets.Any())
-                return NotFound("Nenhum chamado encontrado para o analista especificado");
-            
+                throw new KeyNotFoundException("Nenhum chamado encontrado para o analista especificado");
+
             return Ok(tickets);
+        }
+
+        [HttpPost]
+        public ActionResult Post(Ticket ticket)
+        {
+            if (ticket is null)
+                throw new ArgumentNullException("Chamado inválido");
+
+            var newTicket = _service.Add(ticket);
+
+            return new CreatedAtRouteResult("GetTicket", new { id = newTicket.Id }, newTicket);
         }
 
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Ticket ticket)
         {
-            try
-            {
-                if (ticket is null)
-                    return BadRequest("Chamado inválido");
+            if (ticket is null)
+                throw new ArgumentNullException("Chamado inválido");
 
-                if (id != ticket.Id)
-                    return BadRequest("ID do chamado não corresponde ao ID fornecido na URL");
+            if (id != ticket.Id)
+                throw new ArgumentException("ID do chamado não corresponde ao ID fornecido na URL");
                 
-                return Ok(_service.Update(id, ticket));
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Erro ao atualizar o analista de ID {id}: {e.Message}");
-            }
+            return Ok(_service.Update(id, ticket));
         }
 
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            try
-            {
-                _service.Delete(id);
+            _service.Delete(id);
 
-                return Ok($"Ticket com ID {id} deletado com sucesso");
-            }
-            catch (KeyNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (InvalidOperationException e)
-            {
-                return Conflict(new { message = e.Message });
-            }
-            catch (DbUpdateException e)
-            {
-                return StatusCode(500, new { message = "Erro no banco de dados", details = e.Message });
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"Erro inesperado: {e.Message}");
-            }
+            return Ok($"Ticket com ID {id} deletado com sucesso");
         }
     }
 }

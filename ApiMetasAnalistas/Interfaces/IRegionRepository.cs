@@ -3,13 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ApiMetasAnalistas.Interfaces
 {
-    public interface IRegionRepository
+    public interface IRegionRepository : IRepository<Region>
     {
-        IEnumerable<Region> GetAll();
-        Region? Get(int id);
-        Region? GetReadOnly(int id);
-        void Add(Region region);
-        void Update(Region region);
-        void Delete(Region region);
     }
 }

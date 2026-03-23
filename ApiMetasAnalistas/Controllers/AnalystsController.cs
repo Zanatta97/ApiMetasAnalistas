@@ -8,6 +8,10 @@ namespace ApiMetasAnalistas.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), StatusCodes.Status500InternalServerError)]
     public class AnalystsController : ControllerBase
     {
 

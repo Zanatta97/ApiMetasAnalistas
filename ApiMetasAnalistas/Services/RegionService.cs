@@ -6,22 +6,22 @@ namespace ApiMetasAnalistas.Services
 {
     public class RegionService : IRegionService
     {
-        private readonly IRegionRepository _repository;
-        public RegionService(IRegionRepository repository)
+        private readonly IUnityOfWork _repository;
+        public RegionService(IUnityOfWork repository)
         {
             _repository = repository;
         }
         public IEnumerable<Region> GetAll()
         {
-            return _repository.GetAll();
+            return _repository.RegionRepository.GetAll();
         }
         public Region? Get(int id)
         {
-            return _repository.Get(id);
+            return _repository.RegionRepository.Get(r => r.Id == id);
         }
         public Region? GetReadOnly(int id)
         {
-            return _repository.GetReadOnly(id);
+            return _repository.RegionRepository.GetReadOnly(r => r.Id == id);
         }
         public Region Add(Region region)
         {
@@ -34,7 +34,8 @@ namespace ApiMetasAnalistas.Services
 
             try
             {
-                _repository.Add(region);
+                _repository.RegionRepository.Add(region);
+                _repository.Commit();
                 return region;
             }
             catch (DbUpdateException e)
@@ -47,7 +48,7 @@ namespace ApiMetasAnalistas.Services
         {
             ArgumentNullException.ThrowIfNull(region);
 
-            var existingRegion = _repository.Get(id);
+            var existingRegion = _repository.RegionRepository.Get(r => r.Id == id);
 
             if (existingRegion == null)
             {
@@ -58,7 +59,8 @@ namespace ApiMetasAnalistas.Services
             {
                 existingRegion.Nome = region.Nome;
 
-                _repository.Update(existingRegion);
+                _repository.RegionRepository.Update(existingRegion);
+                _repository.Commit();
                 return existingRegion;
             }
             catch (DbUpdateException e)
@@ -69,7 +71,7 @@ namespace ApiMetasAnalistas.Services
 
         public void Delete(int id)
         {
-            var existingRegion = _repository.Get(id);
+            var existingRegion = _repository.RegionRepository.Get(r => r.Id == id);
 
             if (existingRegion == null)
             {
@@ -78,7 +80,8 @@ namespace ApiMetasAnalistas.Services
 
             try
             {
-                _repository.Delete(existingRegion);
+                _repository.RegionRepository.Delete(existingRegion);
+                _repository.Commit();
             }
             catch (DbUpdateException e)
             {

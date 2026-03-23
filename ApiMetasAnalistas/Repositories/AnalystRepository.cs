@@ -2,19 +2,19 @@
 using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ApiMetasAnalistas.Repositories
 {
-    public class AnalystRepository : IAnalystRepository
+    public class AnalystRepository : Repository<Analyst>, IAnalystRepository
     {
-        private readonly AppDBContext _context;
+        //private readonly AppDBContext _context;
 
-        public AnalystRepository(AppDBContext context)
+        public AnalystRepository(AppDBContext context) : base(context)
         {
-            _context = context;
         }
 
-        public IEnumerable<Analyst> GetAll()
+        public override IEnumerable<Analyst> GetAll()
         {
             return _context.Analysts
                 .AsNoTracking()
@@ -22,11 +22,11 @@ namespace ApiMetasAnalistas.Repositories
                 .ToList();
         }
 
-        public Analyst? Get(int id)
+        public override Analyst? Get(Expression<Func<Analyst, bool>> predicate)
         {
             return _context.Analysts
                 .Include(a => a.Regiao)
-                .FirstOrDefault(a => a.Id == id);
+                .FirstOrDefault(predicate);
         }
 
         /// <summary>
@@ -35,12 +35,12 @@ namespace ApiMetasAnalistas.Repositories
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Analyst? GetReadOnly(int id)
+        public override Analyst? GetReadOnly(Expression<Func<Analyst, bool>> predicate)
         {
             return _context.Analysts
                 .AsNoTracking()
                 .Include(a => a.Regiao)
-                .FirstOrDefault(a => a.Id == id);
+                .FirstOrDefault(predicate);
         }
 
         public Analyst? GetByUserName(string userName)
@@ -49,25 +49,6 @@ namespace ApiMetasAnalistas.Repositories
                 .AsNoTracking()
                 .Include(a => a.Regiao)
                 .FirstOrDefault(a => a.Usuario == userName);
-        }
-
-        public void Add(Analyst analyst)
-        {
-            _context.Analysts.Add(analyst);
-            _context.SaveChanges();
-
-        }
-
-        public void Update(Analyst analyst)
-        {            
-            _context.Analysts.Update(analyst);
-            _context.SaveChanges();
-        }
-
-        public void Delete(Analyst analyst)
-        {
-            _context.Analysts.Remove(analyst);
-            _context.SaveChanges();
         }
 
         public bool HasOccurrences(int id)
