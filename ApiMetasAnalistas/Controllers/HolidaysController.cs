@@ -24,81 +24,78 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Holiday>> Get()
+        public ActionResult<IEnumerable<HolidayResponseDTO>> Get()
         {
             var holidays = _service.GetAll();
 
             if (holidays is null)
                 throw new KeyNotFoundException("Nenhum feriado cadastrado no sistema");
 
-            return Ok(holidays);
+            return Ok(holidays.ToDTOList());
         }
 
         [HttpGet("{id:int}", Name = "GetHoliday")]
-        public ActionResult<Holiday> Get(int id)
+        public ActionResult<HolidayResponseDTO> Get(int id)
         {
             var holiday = _service.GetReadOnly(id);
 
             if (holiday is null)
                 throw new KeyNotFoundException("Feriado não encontrado");
 
-            return Ok(holiday);
+            return Ok(holiday.ToDTO());
         }
 
         [HttpGet("{data:datetime}", Name = "GetHolidayByDate")]
-        public ActionResult<IEnumerable<Holiday>> Get(DateTime data)
+        public ActionResult<IEnumerable<HolidayResponseDTO>> Get(DateTime data)
         {
             var holidays = _service.GetByDate(data);
 
             if (!holidays.Any())
                 throw new KeyNotFoundException("Nenhum feriado encontrado para a data especificada");
 
-            return Ok(holidays);
+            return Ok(holidays.ToDTOList());
         }
 
         [HttpGet("region/{regionId:int}")]
-        public ActionResult<IEnumerable<Holiday>> GetByRegion(int regionId, [FromQuery] DateTime date)
+        public ActionResult<IEnumerable<HolidayResponseDTO>> GetByRegion(int regionId, [FromQuery] DateTime date)
         {
             var holidays = _service.GetByRegion(regionId, date);
 
             if (!holidays.Any())
                 throw new KeyNotFoundException("Nenhum feriado encontrado para o período especificado");
 
-            return Ok(holidays);
+            return Ok(holidays.ToDTOList());
         }
 
         [HttpGet("period")]
-        public ActionResult<IEnumerable<Holiday>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public ActionResult<IEnumerable<HolidayResponseDTO>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var holidays = _service.GetByPeriod(startDate, endDate);
 
             if (!holidays.Any())
                 throw new KeyNotFoundException("Nenhum feriado encontrado para o período especificado");
 
-            return Ok(holidays);
+            return Ok(holidays.ToDTOList());
         }
 
         [HttpPost]
-        public ActionResult Post(Holiday holiday)
+        public ActionResult<HolidayResponseDTO> Post(HolidayRequestDTO holiday)
         {
             if (holiday is null)
                 throw new ArgumentNullException("Feriado inválido");
                 
-            var newHoliday = _service.Add(holiday);
+            var newHoliday = _service.Add(holiday.ToEntity()!);
 
-            return new CreatedAtRouteResult("GetHoliday", new { id = newHoliday.Id }, newHoliday);
+            return new CreatedAtRouteResult("GetHoliday", new { id = newHoliday.Id }, newHoliday.ToDTO());
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Holiday holiday)
+        public ActionResult<HolidayResponseDTO> Put(int id, HolidayRequestDTO holiday)
         {
             if (holiday is null)
                 throw new ArgumentNullException("Feriado inválido");
 
-            if (id != holiday.Id)
-                throw new ArithmeticException("ID do feriado não corresponde ao ID da URL");
-
-            return Ok(_service.Update(id, holiday));
+            return Ok(_service.Update(id, holiday.ToEntity()!).ToDTO());
         }
 
         [HttpDelete("{id:int}")]

@@ -25,59 +25,56 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Ticket>> Get()
+        public ActionResult<IEnumerable<TicketResponseDTO>> Get()
         {
             var tickets = _service.GetAll();
 
             if (!tickets.Any())
                 throw new KeyNotFoundException("Nenhum ticket cadastrado no sistema");
 
-            return Ok(tickets);
+            return Ok(tickets.ToDTOList());
         }
 
         [HttpGet("{id:int}", Name = "GetTicket")]
-        public ActionResult<Ticket> Get(int id)
+        public ActionResult<TicketResponseDTO> Get(int id)
         {
             var ticket = _service.GetReadOnly(id);
 
             if (ticket is null)
                 throw new KeyNotFoundException("Ticket não encontrado");
-            
-            return Ok(ticket);
+
+            return Ok(ticket.ToDTO());
         }
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetTicketsByAnalyst")]
-        public ActionResult<IEnumerable<Ticket>> GetByAnalyst(int idAnalista)
+        public ActionResult<IEnumerable<TicketResponseDTO>> GetByAnalyst(int idAnalista)
         {
             var tickets = _service.GetByAnalystId(idAnalista);
 
             if (!tickets.Any())
                 throw new KeyNotFoundException("Nenhum chamado encontrado para o analista especificado");
 
-            return Ok(tickets);
+            return Ok(tickets.ToDTOList());
         }
 
         [HttpPost]
-        public ActionResult Post(Ticket ticket)
+        public ActionResult<TicketResponseDTO> Post(TicketRequestDTO ticket)
         {
             if (ticket is null)
                 throw new ArgumentNullException("Chamado inválido");
 
-            var newTicket = _service.Add(ticket);
+            var newTicket = _service.Add(ticket.ToEntity()!);
 
-            return new CreatedAtRouteResult("GetTicket", new { id = newTicket.Id }, newTicket);
+            return new CreatedAtRouteResult("GetTicket", new { id = newTicket.Id }, newTicket.ToDTO());
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Ticket ticket)
+        public ActionResult<TicketResponseDTO> Put(int id, TicketRequestDTO ticket)
         {
             if (ticket is null)
                 throw new ArgumentNullException("Chamado inválido");
-
-            if (id != ticket.Id)
-                throw new ArgumentException("ID do chamado não corresponde ao ID fornecido na URL");
                 
-            return Ok(_service.Update(id, ticket));
+            return Ok(_service.Update(id, ticket.ToEntity()!).ToDTO());
         }
 
 

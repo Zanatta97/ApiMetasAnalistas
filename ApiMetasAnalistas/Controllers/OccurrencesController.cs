@@ -24,59 +24,56 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Occurrence>> Get()
+        public ActionResult<IEnumerable<OccurrenceResponseDTO>> Get()
         {
             var occurrences = _service.GetAll();
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Nenhuma ocorrência cadastrada no sistema");
 
-            return Ok(occurrences);
+            return Ok(occurrences.ToDTOList());
         }
 
         [HttpGet("{id:int}", Name = "GetOccurrence")]
-        public ActionResult<Occurrence> Get(int id)
+        public ActionResult<OccurrenceResponseDTO> Get(int id)
         {
             var occurrence = _service.GetReadOnly(id);
 
             if (occurrence is null)
                 throw new KeyNotFoundException("Ocorrência não encontrada");
 
-            return Ok(occurrence);
+            return Ok(occurrence.ToDTO());
         }
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetByAnalyst")]
-        public ActionResult<IEnumerable<Occurrence>> GetByAnalyst(int idAnalista)
+        public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByAnalyst(int idAnalista)
         {
             var occurrences = _service.GetByAnalyst(idAnalista);
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Nenhuma ocorrência encontrada para o analista especificado");
 
-            return Ok(occurrences);
+            return Ok(occurrences.ToDTOList());
         }
 
         [HttpPost]
-        public ActionResult Post(Occurrence occurrence)
+        public ActionResult<OccurrenceResponseDTO> Post(OccurrenceRequestDTO occurrence)
         {
             if (occurrence is null)
                 throw new ArgumentNullException("Ocorrência inválida");
 
-            var newOcurrence = _service.Add(occurrence);
+            var newOcurrence = _service.Add(occurrence.ToEntity()!);
 
-            return new CreatedAtRouteResult("GetOccurrence", new { id = newOcurrence.Id }, newOcurrence);
+            return new CreatedAtRouteResult("GetOccurrence", new { id = newOcurrence.Id }, newOcurrence.ToDTO());
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Occurrence occurrence)
+        public ActionResult<OccurrenceResponseDTO> Put(int id, OccurrenceRequestDTO occurrence)
         {
             if (occurrence is null)
                 throw new ArgumentNullException("Ocorrência inválida");
 
-            if (id != occurrence.Id)
-                throw new ArgumentException("ID da ocorrência não corresponde ao ID do recurso");
-
-            return Ok(_service.Update(id, occurrence));
+            return Ok(_service.Update(id, occurrence.ToEntity()!).ToDTO());
         }
 
         [HttpDelete("{id:int}")]
@@ -88,25 +85,25 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("period/")]
-        public ActionResult<IEnumerable<Occurrence>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var occurrences = _service.GetByPeriod(startDate, endDate);
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Nenhuma ocorrência cadastrada no período");
 
-            return Ok(occurrences);
+            return Ok(occurrences.ToDTOList());
         }
 
         [HttpGet("period/{id:int}")]
-        public ActionResult<IEnumerable<Occurrence>> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var occurrences = _service.GetByAnalystPeriod(id, startDate, endDate);
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Ocorrência não encontrada");
 
-            return Ok(occurrences);
+            return Ok(occurrences.ToDTOList());
         }
 
         [HttpGet("hasOccurrence/{id:int}")]
