@@ -24,6 +24,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<HolidayResponseDTO>> Get()
         {
             var holidays = _service.GetAll();
@@ -35,6 +36,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetHoliday")]
+        [ProducesResponseType(typeof(HolidayResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<HolidayResponseDTO> Get(int id)
         {
             var holiday = _service.GetReadOnly(id);
@@ -46,6 +48,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("{data:datetime}", Name = "GetHolidayByDate")]
+        [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<HolidayResponseDTO>> Get(DateTime data)
         {
             var holidays = _service.GetByDate(data);
@@ -57,6 +60,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("region/{regionId:int}")]
+        [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<HolidayResponseDTO>> GetByRegion(int regionId, [FromQuery] DateTime date)
         {
             var holidays = _service.GetByRegion(regionId, date);
@@ -68,6 +72,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("period")]
+        [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<HolidayResponseDTO>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var holidays = _service.GetByPeriod(startDate, endDate);
@@ -79,6 +84,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(HolidayResponseDTO), StatusCodes.Status201Created)]
         public ActionResult<HolidayResponseDTO> Post(HolidayRequestDTO holiday)
         {
             if (holiday is null)
@@ -90,6 +96,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(HolidayResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<HolidayResponseDTO> Put(int id, HolidayRequestDTO holiday)
         {
             if (holiday is null)
@@ -99,6 +106,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);

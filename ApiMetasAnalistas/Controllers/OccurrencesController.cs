@@ -24,6 +24,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<OccurrenceResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<OccurrenceResponseDTO>> Get()
         {
             var occurrences = _service.GetAll();
@@ -35,6 +36,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetOccurrence")]
+        [ProducesResponseType(typeof(OccurrenceResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<OccurrenceResponseDTO> Get(int id)
         {
             var occurrence = _service.GetReadOnly(id);
@@ -46,6 +48,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetByAnalyst")]
+        [ProducesResponseType(typeof(IEnumerable<OccurrenceResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByAnalyst(int idAnalista)
         {
             var occurrences = _service.GetByAnalyst(idAnalista);
@@ -57,6 +60,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(OccurrenceResponseDTO), StatusCodes.Status201Created)]
         public ActionResult<OccurrenceResponseDTO> Post(OccurrenceRequestDTO occurrence)
         {
             if (occurrence is null)
@@ -68,6 +72,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(OccurrenceResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<OccurrenceResponseDTO> Put(int id, OccurrenceRequestDTO occurrence)
         {
             if (occurrence is null)
@@ -77,6 +82,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);
@@ -96,6 +102,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("period/{id:int}")]
+        [ProducesResponseType(typeof(IEnumerable<OccurrenceResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var occurrences = _service.GetByAnalystPeriod(id, startDate, endDate);
@@ -107,6 +114,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("hasOccurrence/{id:int}")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public ActionResult<bool> HasOcurrences(int id, [FromQuery] DateTime occurrenceDate)
         {
             var hasOcurrences = _service.HasOcurrences(id, occurrenceDate);

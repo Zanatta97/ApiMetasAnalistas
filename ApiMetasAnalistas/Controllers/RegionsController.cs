@@ -24,6 +24,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<RegionResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<RegionResponseDTO>> Get()
         {
             var regions = _service.GetAll();
@@ -35,6 +36,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetRegion")]
+        [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<RegionResponseDTO> Get(int id)
         {
             var region = _service.GetReadOnly(id);
@@ -46,6 +48,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status201Created)]
         public ActionResult<RegionResponseDTO> Post(RegionRequestDTO region)
         {
             if (region is null)
@@ -57,6 +60,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<RegionResponseDTO> Put(int id, RegionRequestDTO region)
         {
             if (region is null)
@@ -66,6 +70,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);

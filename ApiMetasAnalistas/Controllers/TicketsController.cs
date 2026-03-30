@@ -25,6 +25,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<TicketResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<TicketResponseDTO>> Get()
         {
             var tickets = _service.GetAll();
@@ -36,6 +37,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetTicket")]
+        [ProducesResponseType(typeof(TicketResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<TicketResponseDTO> Get(int id)
         {
             var ticket = _service.GetReadOnly(id);
@@ -47,6 +49,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetTicketsByAnalyst")]
+        [ProducesResponseType(typeof(IEnumerable<TicketResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<TicketResponseDTO>> GetByAnalyst(int idAnalista)
         {
             var tickets = _service.GetByAnalystId(idAnalista);
@@ -58,6 +61,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(TicketResponseDTO), StatusCodes.Status201Created)]
         public ActionResult<TicketResponseDTO> Post(TicketRequestDTO ticket)
         {
             if (ticket is null)
@@ -69,6 +73,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(TicketResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<TicketResponseDTO> Put(int id, TicketRequestDTO ticket)
         {
             if (ticket is null)
@@ -79,6 +84,7 @@ namespace ApiMetasAnalistas.Controllers
 
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);

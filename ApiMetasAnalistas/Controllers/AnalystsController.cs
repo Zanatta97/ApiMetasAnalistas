@@ -25,6 +25,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<AnalystResponseDTO>), StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<AnalystResponseDTO>> Get()
         {
             var analysts = _service.GetAll();
@@ -36,6 +37,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("{id:int}", Name = "GetAnalyst")]
+        [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<AnalystResponseDTO> Get(int id)
         {
             var analyst = _service.Get(id);
@@ -47,6 +49,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status201Created)]
         public ActionResult<AnalystResponseDTO> Post(AnalystRequestDTO analyst)
         {
             if (analyst is null)
@@ -58,6 +61,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status200OK)]
         public ActionResult<AnalystResponseDTO> Put(int id, AnalystRequestDTO analyst)
         {
             if (analyst is null)
@@ -67,6 +71,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);
@@ -75,6 +80,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("target/{id:int}", Name = "GetAnalystTarget")]
+        [ProducesResponseType(typeof(AnalystResultDTO), StatusCodes.Status200OK)]
         public ActionResult<AnalystResultDTO> GetAnalystTarget(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var analyst = _service.Get(id);
@@ -88,6 +94,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("target")]
+        [ProducesResponseType(typeof(AnalystResultDTO), StatusCodes.Status200OK)]
         public ActionResult<AnalystResultDTO> GetTargetResults([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             if (startDate > endDate)
@@ -100,6 +107,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("exists/{username}")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public ActionResult<bool> UsernameExists(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
