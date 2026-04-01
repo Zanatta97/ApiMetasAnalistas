@@ -25,51 +25,53 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Analyst>> Get()
+        [ProducesResponseType(typeof(IEnumerable<AnalystResponseDTO>), StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<AnalystResponseDTO>> Get()
         {
             var analysts = _service.GetAll();
 
             if (!analysts.Any())
                 throw new KeyNotFoundException("Nenhum analista encontrado");
 
-            return Ok(analysts);
+            return Ok(analysts.ToDTOList());
         }
 
         [HttpGet("{id:int}", Name = "GetAnalyst")]
-        public ActionResult<Analyst> Get(int id)
+        [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status200OK)]
+        public ActionResult<AnalystResponseDTO> Get(int id)
         {
             var analyst = _service.Get(id);
 
             if (analyst is null)
                 throw new KeyNotFoundException("Nenhum analista encontrado");
 
-            return Ok(analyst);
+            return Ok(analyst.ToDTO());
         }
 
         [HttpPost]
-        public ActionResult Post(Analyst analyst)
+        [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status201Created)]
+        public ActionResult<AnalystResponseDTO> Post(AnalystRequestDTO analyst)
         {
             if (analyst is null)
                 throw new ArgumentNullException(nameof(analyst), "Analista inválido");
 
-            var newAnalyst = _service.Add(analyst);
+            var newAnalyst = _service.Add(analyst.ToEntity()!);
 
-            return new CreatedAtRouteResult("GetAnalyst", new { id = newAnalyst.Id }, newAnalyst);
+            return new CreatedAtRouteResult("GetAnalyst", new { id = newAnalyst.Id }, newAnalyst.ToDTO());
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Analyst analyst)
+        [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status200OK)]
+        public ActionResult<AnalystResponseDTO> Put(int id, AnalystRequestDTO analyst)
         {
             if (analyst is null)
                 throw new ArgumentNullException(nameof(analyst), "Analista inválido");
 
-            if (id != analyst.Id)
-                throw new ArgumentException("O ID do analista na URL deve corresponder ao ID no corpo da requisição");
-
-            return Ok(_service.Update(id, analyst));         
+            return Ok(_service.Update(id, analyst.ToEntity()!).ToDTO());         
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);
@@ -78,6 +80,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("target/{id:int}", Name = "GetAnalystTarget")]
+        [ProducesResponseType(typeof(AnalystResultDTO), StatusCodes.Status200OK)]
         public ActionResult<AnalystResultDTO> GetAnalystTarget(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var analyst = _service.Get(id);
@@ -91,7 +94,8 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("target")]
-        public ActionResult GetTargetResults([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        [ProducesResponseType(typeof(AnalystResultDTO), StatusCodes.Status200OK)]
+        public ActionResult<AnalystResultDTO> GetTargetResults([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             if (startDate > endDate)
                 throw new ArgumentException("A data de início deve ser anterior à data de término");
@@ -103,6 +107,7 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet("exists/{username}")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public ActionResult<bool> UsernameExists(string username)
         {
             if (string.IsNullOrWhiteSpace(username))

@@ -24,51 +24,53 @@ namespace ApiMetasAnalistas.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Region>> Get()
+        [ProducesResponseType(typeof(IEnumerable<RegionResponseDTO>), StatusCodes.Status200OK)]
+        public ActionResult<IEnumerable<RegionResponseDTO>> Get()
         {
             var regions = _service.GetAll();
 
             if (regions is null)
                 throw new KeyNotFoundException("Nenhuma região cadastrada no sistema");
 
-            return Ok(regions);
+            return Ok(regions.ToDTOList());
         }
 
         [HttpGet("{id:int}", Name = "GetRegion")]
-        public ActionResult<Region> Get(int id)
+        [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status200OK)]
+        public ActionResult<RegionResponseDTO> Get(int id)
         {
             var region = _service.GetReadOnly(id);
 
             if (region is null)
                 throw new KeyNotFoundException("Região não encontrada");
 
-            return region;
+            return Ok(region.ToDTO());
         }
 
         [HttpPost]
-        public ActionResult Post(Region region)
+        [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status201Created)]
+        public ActionResult<RegionResponseDTO> Post(RegionRequestDTO region)
         {
             if (region is null)
                 throw new ArgumentNullException("Região inválida");
 
-            var newRegion = _service.Add(region);
+            var newRegion = _service.Add(region.ToEntity()!);
 
-            return new CreatedAtRouteResult("GetRegion", new { id = newRegion.Id }, newRegion);
+            return new CreatedAtRouteResult("GetRegion", new { id = newRegion.Id }, newRegion.ToDTO());
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Region region)
+        [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status200OK)]
+        public ActionResult<RegionResponseDTO> Put(int id, RegionRequestDTO region)
         {
             if (region is null)
                 throw new ArgumentNullException("Região inválida");
 
-            if (id != region.Id)
-                throw new ArgumentException("ID da região não corresponde ao ID do recurso");
-
-            return Ok(_service.Update(id, region));
+            return Ok(_service.Update(id, region.ToEntity()!).ToDTO());
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public ActionResult Delete(int id)
         {
             _service.Delete(id);
