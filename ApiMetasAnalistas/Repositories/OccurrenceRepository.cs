@@ -12,64 +12,64 @@ namespace ApiMetasAnalistas.Repositories
         {
         }
         //TODO: Finalizar alteração dos repositórios de Região e Ticket
-        public override IEnumerable<Occurrence> GetAll()
+        public override async Task<IEnumerable<Occurrence>> GetAllAsync()
         {
-            return _context.Occurrences
+            return await _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
-                .ToList();
+                .ToListAsync();
         }
 
-        public override Occurrence? GetReadOnly(Expression<Func<Occurrence, bool>> predicate)
+        public override async Task<Occurrence?> GetReadOnlyAsync(Expression<Func<Occurrence, bool>> predicate)
         {
-            return _context.Occurrences
+            return await _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
-                .FirstOrDefault(predicate);
+                .FirstOrDefaultAsync(predicate);
         }
 
-        public override Occurrence? Get(Expression<Func<Occurrence, bool>> predicate)
+        public override async Task<Occurrence?> GetAsync(Expression<Func<Occurrence, bool>> predicate)
         {
-            return _context.Occurrences
+            return await _context.Occurrences
                 .Include(a => a.Analista)
-                .FirstOrDefault(predicate);
+                .FirstOrDefaultAsync(predicate);
         }
-        public IEnumerable<Occurrence> GetByAnalyst(int analystId)
+        public async Task<IEnumerable<Occurrence>> GetByAnalystAsync(int analystId)
         {
-            return _context.Occurrences
+            return await _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
                 .Where(o => o.AnalistaId == analystId)
-                .ToList();
+                .ToListAsync();
         }
 
-        public IEnumerable<Occurrence> GetByAnalystPeriod(int analystId, DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Occurrence>> GetByAnalystPeriodAsync(int analystId, DateTime startDate, DateTime endDate)
         {
-            return _context.Occurrences
+            return await _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
                 .Where(o => o.AnalistaId == analystId
                        && o.DataInicio <= endDate
                        && o.DataFim >= startDate)
-                .ToList();
+                .ToListAsync();
         }
 
-        public IEnumerable<Occurrence> GetByPeriod(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Occurrence>> GetByPeriodAsync(DateTime startDate, DateTime endDate)
         {
-            return _context.Occurrences
+            return await _context.Occurrences
                 .AsNoTracking()
                 .Include(a => a.Analista)
                 .Where(o => o.DataInicio <= endDate && o.DataFim >= startDate)
-                .ToList();
+                .ToListAsync();
         }
 
-        public bool HasOcurrences(int id, DateTime occurrenceDate)
+        public async Task<bool> HasOcurrencesAsync(int id, DateTime occurrenceDate)
         {
-            return _context.Occurrences
+            return await _context.Occurrences
                 .Where(o => o.AnalistaId == id
                     && o.DataInicio <= occurrenceDate
                     && o.DataFim >= occurrenceDate)
-                .Any(o => o.AnalistaId == id);
+                .AnyAsync(o => o.AnalistaId == id);
         }
     }
 }

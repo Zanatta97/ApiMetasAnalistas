@@ -4,8 +4,8 @@ namespace ApiMetasAnalistas.Interfaces
 {
     public interface IHolidayRepository : IRepository<Holiday>
     {
-        IEnumerable<Holiday> GetByDate(DateTime data);
-        IEnumerable<Holiday> GetByRegion(int regionId, DateTime data);
-        IEnumerable<Holiday> GetByPeriod(DateTime startDate, DateTime endDate);
+        Task<IEnumerable<Holiday>> GetByDateAsync(DateTime data);
+        Task<IEnumerable<Holiday>> GetByRegionAsync(int regionId, DateTime data);
+        Task<IEnumerable<Holiday>> GetByPeriodAsync(DateTime startDate, DateTime endDate);
     }
 }

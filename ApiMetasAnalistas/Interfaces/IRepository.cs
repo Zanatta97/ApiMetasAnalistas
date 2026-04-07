@@ -5,8 +5,8 @@ namespace ApiMetasAnalistas.Interfaces
 {
     public interface IRepository<T> where T : class
     {
-        public IEnumerable<T> GetAll();
-        public T? Get(Expression<Func<T, bool>> predicate);
+        public Task<IEnumerable<T>> GetAllAsync();
+        public Task<T?> GetAsync(Expression<Func<T, bool>> predicate);
 
         /// <summary>
         /// Retorna o analista sem Tracking
@@ -14,7 +14,7 @@ namespace ApiMetasAnalistas.Interfaces
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public T? GetReadOnly(Expression<Func<T, bool>> predicate);
+        public Task<T?> GetReadOnlyAsync(Expression<Func<T, bool>> predicate);
         public void Add(T entity);
         public void Update(T entity);
         public void Delete(T entity);

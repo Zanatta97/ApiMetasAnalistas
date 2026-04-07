@@ -25,9 +25,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<RegionResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<RegionResponseDTO>> Get()
+        public async Task<ActionResult<IEnumerable<RegionResponseDTO>>> Get()
         {
-            var regions = _service.GetAll();
+            var regions = await _service.GetAllAsync();
 
             if (regions is null)
                 throw new KeyNotFoundException("Nenhuma região cadastrada no sistema");
@@ -37,9 +37,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("{id:int}", Name = "GetRegion")]
         [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<RegionResponseDTO> Get(int id)
+        public async Task<ActionResult<RegionResponseDTO>> Get(int id)
         {
-            var region = _service.GetReadOnly(id);
+            var region = await _service.GetReadOnlyAsync(id);
 
             if (region is null)
                 throw new KeyNotFoundException("Região não encontrada");
@@ -49,31 +49,33 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status201Created)]
-        public ActionResult<RegionResponseDTO> Post(RegionRequestDTO region)
+        public async Task<ActionResult<RegionResponseDTO>> Post(RegionRequestDTO region)
         {
             if (region is null)
                 throw new ArgumentNullException("Região inválida");
 
-            var newRegion = _service.Add(region.ToEntity()!);
+            var newRegion = await _service.AddAsync(region.ToEntity()!);
 
             return new CreatedAtRouteResult("GetRegion", new { id = newRegion.Id }, newRegion.ToDTO());
         }
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(RegionResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<RegionResponseDTO> Put(int id, RegionRequestDTO region)
+        public async Task<ActionResult<RegionResponseDTO>> Put(int id, RegionRequestDTO region)
         {
             if (region is null)
                 throw new ArgumentNullException("Região inválida");
 
-            return Ok(_service.Update(id, region.ToEntity()!).ToDTO());
+            var updatedRegion = await _service.UpdateAsync(id, region.ToEntity()!);
+
+            return Ok(updatedRegion.ToDTO());
         }
 
         [HttpDelete("{id:int}")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            _service.Delete(id);
+            await _service.DeleteAsync(id);
 
             return Ok($"Região de ID {id} deletada com sucesso");
         }

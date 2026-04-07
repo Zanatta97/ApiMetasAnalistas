@@ -4,14 +4,14 @@ namespace ApiMetasAnalistas.Interfaces
 {
     public interface IHolidayService
     {
-        IEnumerable<Holiday> GetAll();
-        Holiday? Get(int id);
-        Holiday? GetReadOnly(int id);
-        IEnumerable<Holiday> GetByDate(DateTime data);
-        IEnumerable<Holiday> GetByRegion(int regionId, DateTime data);
-        IEnumerable<Holiday> GetByPeriod(DateTime startDate, DateTime endDate);
-        Holiday Add(Holiday holiday);
-        Holiday Update(int id, Holiday holiday);
-        void Delete(int id);
+        Task<IEnumerable<Holiday>> GetAllAsync();
+        Task<Holiday?> GetAsync(int id);
+        Task<Holiday?> GetReadOnlyAsync(int id);
+        Task<IEnumerable<Holiday>> GetByDateAsync(DateTime data);
+        Task<IEnumerable<Holiday>> GetByRegionAsync(int regionId, DateTime data);
+        Task<IEnumerable<Holiday>> GetByPeriodAsync(DateTime startDate, DateTime endDate);
+        Task<Holiday> AddAsync(Holiday holiday);
+        Task<Holiday> UpdateAsync(int id, Holiday holiday);
+        Task DeleteAsync(int id);
     }
 }

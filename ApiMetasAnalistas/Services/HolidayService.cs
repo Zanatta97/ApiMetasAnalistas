@@ -14,37 +14,37 @@ namespace ApiMetasAnalistas.Services
             _repository = repository;
         }
 
-        public IEnumerable<Holiday> GetAll()
+        public async Task<IEnumerable<Holiday>> GetAllAsync()
         {
-            return _repository.HolidayRepository.GetAll();
+            return await _repository.HolidayRepository.GetAllAsync();
         }
 
-        public Holiday? Get(int id)
+        public async Task<Holiday?> GetAsync(int id)
         {
-            return _repository.HolidayRepository.Get(h => h.Id == id);
+            return await _repository.HolidayRepository.GetAsync(h => h.Id == id);
         }
 
-        public Holiday? GetReadOnly(int id)
+        public async Task<Holiday?> GetReadOnlyAsync(int id)
         {
-            return _repository.HolidayRepository.GetReadOnly(h => h.Id == id);
+            return await _repository.HolidayRepository.GetReadOnlyAsync(h => h.Id == id);
         }
 
-        public IEnumerable<Holiday> GetByDate(DateTime data)
+        public async Task<IEnumerable<Holiday>> GetByDateAsync(DateTime data)
         {
-            return _repository.HolidayRepository.GetByDate(data);
+            return await _repository.HolidayRepository.GetByDateAsync(data);
         }
 
-        public IEnumerable<Holiday> GetByRegion(int regionId, DateTime data)
+        public async Task<IEnumerable<Holiday>> GetByRegionAsync(int regionId, DateTime data)
         {
-            return _repository.HolidayRepository.GetByRegion(regionId, data);
+            return await _repository.HolidayRepository.GetByRegionAsync(regionId, data);
         }
 
-        public IEnumerable<Holiday> GetByPeriod(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Holiday>> GetByPeriodAsync(DateTime startDate, DateTime endDate)
         {
-            return _repository.HolidayRepository.GetByPeriod(startDate, endDate);
+            return await _repository.HolidayRepository.GetByPeriodAsync(startDate, endDate);
         }
 
-        public Holiday Add(Holiday holiday)
+        public async Task<Holiday> AddAsync(Holiday holiday)
         {
             ArgumentNullException.ThrowIfNull(holiday);
             if (string.IsNullOrEmpty(holiday.Descricao))
@@ -63,7 +63,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.HolidayRepository.Add(holiday);
-                _repository.Commit();
+                await _repository.Commit();
                 return (holiday);
             }
             catch (DbUpdateException e)
@@ -72,11 +72,11 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public Holiday Update(int id, Holiday holiday)
+        public async Task<Holiday> UpdateAsync(int id, Holiday holiday)
         {
             ArgumentNullException.ThrowIfNull(holiday);
 
-            var existingHoliday = _repository.HolidayRepository.Get(h => h.Id == id);
+            var existingHoliday = await _repository.HolidayRepository.GetAsync(h => h.Id == id);
 
             if (existingHoliday == null)
             {
@@ -90,7 +90,7 @@ namespace ApiMetasAnalistas.Services
                 existingHoliday.RegiaoId = holiday.RegiaoId;
 
                 _repository.HolidayRepository.Update(existingHoliday);
-                _repository.Commit();
+                await _repository.Commit();
                 return existingHoliday;
             }
             catch (DbUpdateException e)
@@ -99,9 +99,9 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var existingHoliday = _repository.HolidayRepository.Get(h => h.Id == id);
+            var existingHoliday = await _repository.HolidayRepository.GetAsync(h => h.Id == id);
 
             if (existingHoliday == null)
             {
@@ -111,7 +111,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.HolidayRepository.Delete(existingHoliday);
-                _repository.Commit();
+                await _repository.Commit();
             }
             catch (DbUpdateException e)
             {

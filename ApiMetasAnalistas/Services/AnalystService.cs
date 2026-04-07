@@ -15,14 +15,14 @@ namespace ApiMetasAnalistas.Services
             _repository = repository;
         }
 
-        public IEnumerable<Analyst> GetAll()
+        public async Task<IEnumerable<Analyst>> GetAllAsync()
         {
-            return _repository.AnalystRepository.GetAll();
+            return await _repository.AnalystRepository.GetAllAsync();
         }
 
-        public Analyst? Get(int id)
+        public async Task<Analyst?> GetAsync(int id)
         {
-            return _repository.AnalystRepository.Get(a => a.Id == id);
+            return await _repository.AnalystRepository.GetAsync(a => a.Id == id);
         }
 
         /// <summary>
@@ -31,17 +31,17 @@ namespace ApiMetasAnalistas.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Analyst? GetReadOnly(int id)
+        public async Task<Analyst?> GetReadOnlyAsync(int id)
         {
-            return _repository.AnalystRepository.GetReadOnly(a => a.Id == id);
+            return await _repository.AnalystRepository.GetReadOnlyAsync(a => a.Id == id);
         }
 
-        public Analyst? GetByUserName(string userName)
+        public async Task<Analyst?> GetByUserNameAsync(string userName)
         {
-            return _repository.AnalystRepository.GetByUserName(userName);
+            return await _repository.AnalystRepository.GetByUserNameAsync(userName);
         }
 
-        public Analyst Add(Analyst analyst)
+        public async Task<Analyst> AddAsync(Analyst analyst)
         {
             ArgumentNullException.ThrowIfNull(analyst);
 
@@ -60,7 +60,7 @@ namespace ApiMetasAnalistas.Services
                 throw new ArgumentException($"Valor {analyst.MetaDiaria} inválido para a Meta do analista", nameof(analyst.MetaDiaria));
             }
 
-            if (_repository.AnalystRepository.GetByUserName(analyst.Usuario) != null)
+            if (await _repository.AnalystRepository.GetByUserNameAsync(analyst.Usuario) != null)
             {
                 throw new InvalidOperationException($"O nome de usuário {analyst.Usuario} já existe");
             }
@@ -68,7 +68,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.AnalystRepository.Add(analyst);
-                _repository.Commit();
+                await _repository.Commit();
                 return analyst;
             }
             catch (DbUpdateException e)
@@ -77,7 +77,7 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public Analyst Update(int id, Analyst analyst)
+        public async Task<Analyst> UpdateAsync(int id, Analyst analyst)
         {
             //Outra forma de fazer isto seria utilizando o EntityState.Modified,
             //mas isso pode levar a problemas de segurança, como ataques de overposting,
@@ -95,7 +95,7 @@ namespace ApiMetasAnalistas.Services
 
             ArgumentNullException.ThrowIfNull(analyst);
 
-            var existingAnalyst = Get(id);
+            var existingAnalyst = await GetAsync(id);
 
             if (existingAnalyst == null)
             {
@@ -110,7 +110,7 @@ namespace ApiMetasAnalistas.Services
                 existingAnalyst.MetaDiaria = analyst.MetaDiaria;
 
                 _repository.AnalystRepository.Update(existingAnalyst);
-                _repository.Commit();
+                await _repository.Commit();
                 return existingAnalyst;
             }
             catch (DbUpdateException e)
@@ -119,22 +119,22 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
 
-            var existingAnalyst = Get(id);
+            var existingAnalyst = await GetAsync(id);
 
             if (existingAnalyst == null)
             {
                 throw new KeyNotFoundException($"Analista com ID {id} não encontrado");
             }
 
-            if (_repository.AnalystRepository.HasOccurrences(existingAnalyst.Id))
+            if (await _repository.AnalystRepository.HasOccurrencesAsync(existingAnalyst.Id))
             {
                 throw new InvalidOperationException("Não é possível excluir o analista porque ele tem ocorrências associadas");
             }
 
-            if (_repository.AnalystRepository.HasTickets(existingAnalyst.Id))
+            if (await _repository.AnalystRepository.HasTicketsAsync(existingAnalyst.Id))
             {
                 throw new InvalidOperationException("Não é possível excluir o analista porque ele tem chamados associados");
             }
@@ -142,7 +142,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.AnalystRepository.Delete(existingAnalyst);
-                _repository.Commit();
+                await _repository.Commit();
             }
             catch (DbUpdateException e)
             {
@@ -152,11 +152,11 @@ namespace ApiMetasAnalistas.Services
         }
 
 
-        public int GetTargetForPeriod(int id, DateTime startDate, DateTime endDate)
+        public async Task<int> GetTargetForPeriodAsync(int id, DateTime startDate, DateTime endDate)
         {
             try
             {
-                var analyst = GetReadOnly(id);
+                var analyst = await GetReadOnlyAsync(id);
 
                 if (analyst is null)
                     throw new KeyNotFoundException($"Analista com ID {id} não encontrado");
@@ -167,11 +167,11 @@ namespace ApiMetasAnalistas.Services
                 {
                     var currentDate = startDate.Date.AddDays(i);
 
-                    var isHoliday = _repository.AnalystRepository.IsHoliday(analyst, currentDate);
+                    var isHoliday = await _repository.AnalystRepository.IsHolidayAsync(analyst, currentDate);
 
                     var isWeekend = currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday;
 
-                    var hasOccurrence = _repository.AnalystRepository.HasOccurrence(analyst.Id, currentDate);
+                    var hasOccurrence = await _repository.AnalystRepository.HasOccurrenceAsync(analyst.Id, currentDate);
 
                     if (!isHoliday && !isWeekend && !hasOccurrence)
                         totalDays++;
@@ -188,11 +188,11 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public List<AnalystResultDTO> GetTargetResults(DateTime startDate, DateTime endDate)
+        public async Task<List<AnalystResultDTO>> GetTargetResultsAsync(DateTime startDate, DateTime endDate)
         {
             try
             {
-                var analysts = _repository.AnalystRepository.GetAll();
+                var analysts = await _repository.AnalystRepository.GetAllAsync();
 
                 if (!analysts.Any())
                     throw new KeyNotFoundException("Nenhum analista encontrado");
@@ -201,15 +201,15 @@ namespace ApiMetasAnalistas.Services
 
                 foreach (var analyst in analysts)
                 {
-                    var totalTarget = GetTargetForPeriod(analyst.Id, startDate, endDate);
-                    var ticketsFechados = _repository.AnalystRepository.TicketCount(analyst.Id, startDate, endDate);
+                    var totalTarget = await GetTargetForPeriodAsync(analyst.Id, startDate, endDate);
+                    var ticketsFechados = await _repository.AnalystRepository.TicketCountAsync(analyst.Id, startDate, endDate);
 
                     targetResults.Add(new AnalystResultDTO
                     {
                         AnalistaId = analyst.Id,
                         NomeAnalista = analyst.Nome,
                         RegiaoId = analyst.RegiaoId,
-                        TotalDiasUteis = AnalystTotalDays(startDate, endDate, analyst),
+                        TotalDiasUteis = await AnalystTotalDaysAsync(startDate, endDate, analyst),
                         MetaDiaria = analyst.MetaDiaria,
                         TotalMetaPeriodo = totalTarget,
                         TicketsFechados = ticketsFechados,
@@ -228,21 +228,21 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public AnalystResultDTO GetAnalystTargetResults(DateTime startDate, DateTime endDate, Analyst analyst)
+        public async Task<AnalystResultDTO> GetAnalystTargetResultsAsync(DateTime startDate, DateTime endDate, Analyst analyst)
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(analyst);
 
-                var totalTarget = GetTargetForPeriod(analyst.Id, startDate, endDate);
-                var ticketsFechados = _repository.AnalystRepository.TicketCount(analyst.Id, startDate, endDate);
+                var totalTarget = await GetTargetForPeriodAsync(analyst.Id, startDate, endDate);
+                var ticketsFechados = await _repository.AnalystRepository.TicketCountAsync(analyst.Id, startDate, endDate);
 
                 var targetResults = new AnalystResultDTO
                 {
                     AnalistaId = analyst.Id,
                     NomeAnalista = analyst.Nome,
                     RegiaoId = analyst.RegiaoId,
-                    TotalDiasUteis = AnalystTotalDays(startDate, endDate, analyst),
+                    TotalDiasUteis = await AnalystTotalDaysAsync(startDate, endDate, analyst),
                     MetaDiaria = analyst.MetaDiaria,
                     TotalMetaPeriodo = totalTarget,
                     TicketsFechados = ticketsFechados,
@@ -259,7 +259,7 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public int AnalystTotalDays(DateTime startDate, DateTime endDate, Analyst analyst)
+        public async Task<int> AnalystTotalDaysAsync(DateTime startDate, DateTime endDate, Analyst analyst)
         {
             var totalDays = 0;
 
@@ -267,7 +267,7 @@ namespace ApiMetasAnalistas.Services
             {
                 var currentDate = startDate.Date.AddDays(i);
 
-                var isHoliday = _repository.AnalystRepository.IsHoliday(analyst, currentDate);
+                var isHoliday = await _repository.AnalystRepository.IsHolidayAsync(analyst, currentDate);
 
                 var isWeekend = currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday;
 

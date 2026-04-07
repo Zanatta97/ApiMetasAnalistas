@@ -7,6 +7,6 @@
         IOccurrenceRepository OccurrenceRepository { get; }
         IRegionRepository RegionRepository { get; }
         ITicketRepository TicketRepository { get; }
-        void Commit();
+        Task Commit();
     }
 }

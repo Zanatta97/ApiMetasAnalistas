@@ -1,6 +1,8 @@
-﻿using ApiMetasAnalistas.Interfaces;
+﻿using ApiMetasAnalistas.Common.Pagination;
+using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList;
 
 namespace ApiMetasAnalistas.Services
 {
@@ -13,27 +15,27 @@ namespace ApiMetasAnalistas.Services
             _repository = repository;
         }
 
-        public IEnumerable<Ticket> GetAll()
+        public async Task<IEnumerable<Ticket>> GetAllAsync()
         {
-            return _repository.TicketRepository.GetAll();
+            return await _repository.TicketRepository.GetAllAsync();
         }
 
-        public Ticket? Get(int id)
+        public async Task<Ticket?> GetAsync(int id)
         {
-            return _repository.TicketRepository.Get(t => t.Id == id);
+            return await _repository.TicketRepository.GetAsync(t => t.Id == id);
         }
 
-        public Ticket? GetReadOnly(int id)
+        public async Task<Ticket?> GetReadOnlyAsync(int id)
         {
-            return _repository.TicketRepository.GetReadOnly(t => t.Id == id);
+            return await _repository.TicketRepository.GetReadOnlyAsync(t => t.Id == id);
         }
 
-        public IEnumerable<Ticket> GetByAnalystId(int analystId)
+        public async Task<IEnumerable<Ticket>> GetByAnalystIdAsync(int analystId)
         {
-            return _repository.TicketRepository.GetByAnalystId(analystId);
+            return await _repository.TicketRepository.GetByAnalystIdAsync(analystId);
         }
 
-        public Ticket Add(Ticket ticket)
+        public async Task<Ticket> AddAsync(Ticket ticket)
         {
             ArgumentNullException.ThrowIfNull(ticket);
 
@@ -49,7 +51,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.TicketRepository.Add(ticket);
-                _repository.Commit();
+                await _repository.Commit();
                 return ticket;
             }
             catch (DbUpdateException e)
@@ -58,11 +60,11 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public Ticket Update(int id, Ticket ticket)
+        public async Task<Ticket> UpdateAsync(int id, Ticket ticket)
         {
             ArgumentNullException.ThrowIfNull(ticket);
 
-            var existingTicket = _repository.TicketRepository.Get(t => t.Id == id);
+            var existingTicket = await _repository.TicketRepository.GetAsync(t => t.Id == id);
 
             if (existingTicket == null)
             {
@@ -75,7 +77,7 @@ namespace ApiMetasAnalistas.Services
                 existingTicket.DataFechamento = ticket.DataFechamento;
 
                 _repository.TicketRepository.Update(existingTicket);
-                _repository.Commit();
+                await _repository.Commit();
                 return existingTicket;
             }
             catch (DbUpdateException e)
@@ -84,9 +86,9 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var existingTicket = _repository.TicketRepository.Get(t => t.Id == id);
+            var existingTicket = await _repository.TicketRepository.GetAsync(t => t.Id == id);
 
             if (existingTicket == null)
             {
@@ -95,12 +97,24 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.TicketRepository.Delete(existingTicket);
-                _repository.Commit();
+                await _repository.Commit();
             }
             catch (DbUpdateException e)
             {
                 throw new Exception("Ocorreu um erro ao excluir o ticket", e);
             }
+        }
+
+        public async Task<IPagedList<Ticket>> GetPagedAsync(PaginationParameters parameters)
+        {
+            var tickets = await _repository.TicketRepository.GetPagedAsync(parameters);
+
+            return tickets;
+        }
+
+        public async Task<IPagedList<Ticket>> GetFilteredAsync(string filter, PaginationParameters parameters)
+        {
+            return await _repository.TicketRepository.GetFilteredAsync(filter, parameters);
         }
     }
 }

@@ -58,9 +58,9 @@ namespace ApiMetasAnalistas.Repositories
             }
         }
 
-        public void Commit()
+        public async Task Commit()
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         public void Dispose()

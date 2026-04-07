@@ -6,15 +6,15 @@ namespace ApiMetasAnalistas.Interfaces
 {
     public interface IOccurrenceService
     {
-        public IEnumerable<Occurrence> GetAll();
-        public Occurrence? Get(int id);
-        public Occurrence? GetReadOnly(int id);
-        public Occurrence Add(Occurrence occurrence);
-        public Occurrence Update(int id, Occurrence occurrence);
-        public void Delete(int id);
-        public IEnumerable<Occurrence> GetByAnalyst(int analystId);
-        public IEnumerable<Occurrence> GetByAnalystPeriod(int analystId, DateTime startDate, DateTime endDate);
-        public IEnumerable<Occurrence> GetByPeriod(DateTime startDate, DateTime endDate);
-        public bool HasOcurrences(int id, DateTime occurrenceDate);
+        public Task<IEnumerable<Occurrence>> GetAllAsync();
+        public Task<Occurrence?> GetAsync(int id);
+        public Task<Occurrence?> GetReadOnlyAsync(int id);
+        public Task<Occurrence> AddAsync(Occurrence occurrence);
+        public Task<Occurrence> UpdateAsync(int id, Occurrence occurrence);
+        public Task DeleteAsync(int id);
+        public Task<IEnumerable<Occurrence>> GetByAnalystAsync(int analystId);
+        public Task<IEnumerable<Occurrence>> GetByAnalystPeriodAsync(int analystId, DateTime startDate, DateTime endDate);
+        public Task<IEnumerable<Occurrence>> GetByPeriodAsync(DateTime startDate, DateTime endDate);
+        public Task<bool> HasOcurrencesAsync(int id, DateTime occurrenceDate);
     }
 }
