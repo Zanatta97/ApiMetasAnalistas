@@ -1,9 +1,11 @@
-﻿using ApiMetasAnalistas.Common.Pagination;
+﻿using ApiMetasAnalistas.Common.Extensions;
+using ApiMetasAnalistas.Common.Pagination;
 using ApiMetasAnalistas.Context;
 using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.EntityFrameworkCore;
 using X.PagedList;
+using X.PagedList.EntityFramework;
 using X.PagedList.Extensions;
 
 namespace ApiMetasAnalistas.Repositories
@@ -21,11 +23,9 @@ namespace ApiMetasAnalistas.Repositories
 
         public async Task<IPagedList<Ticket>> GetPagedAsync(PaginationParameters parameters)
         {
-            var tickets = await GetAllAsync();
+            var tickets = _context.Tickets.OrderBy(t => t.Id).AsAsyncQueryable();
 
-            tickets = tickets.OrderBy(t => t.Id).AsQueryable();
-
-            var resultado = tickets.ToPagedList(parameters.PageNumber, parameters.PageSize);
+            var resultado = await tickets.ToPagedListAsync(parameters.PageNumber, parameters.PageSize);
 
             return resultado;
         }
@@ -41,9 +41,9 @@ namespace ApiMetasAnalistas.Repositories
                 return new List<Ticket>().ToPagedList(parameters.PageNumber, parameters.PageSize);
             }
 
-            var tickets = _context.Tickets.Where(t => analystId.Contains(t.AnalystId)).OrderBy(t => t.Id).AsQueryable();
+            var tickets = _context.Tickets.Where(t => analystId.Contains(t.AnalystId)).OrderBy(t => t.Id).AsAsyncQueryable();
 
-            var resultado = tickets.ToPagedList(parameters.PageNumber, parameters.PageSize);
+            var resultado = await tickets.ToPagedListAsync(parameters.PageNumber, parameters.PageSize);
 
             return resultado;
         }

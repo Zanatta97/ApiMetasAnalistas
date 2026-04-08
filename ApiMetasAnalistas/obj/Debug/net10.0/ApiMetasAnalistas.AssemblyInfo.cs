@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiMetasAnalistas")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f615bf8b38008e201b5dfa6fbf909d7ee70ccd53")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+88e25eb3b60998f28af4cbf6020f3e3e6d0dee09")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiMetasAnalistas")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiMetasAnalistas")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
