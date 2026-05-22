@@ -14,19 +14,19 @@ namespace ApiMetasAnalistas.Repositories
         {
         }
 
-        public override IEnumerable<Analyst> GetAll()
+        public override async Task<IEnumerable<Analyst>> GetAllAsync()
         {
-            return _context.Analysts
+            return await _context.Analysts
                 .AsNoTracking()
                 .Include(a => a.Regiao)
-                .ToList();
+                .ToListAsync();
         }
 
-        public override Analyst? Get(Expression<Func<Analyst, bool>> predicate)
+        public override async Task<Analyst?> GetAsync(Expression<Func<Analyst, bool>> predicate)
         {
-            return _context.Analysts
+            return await _context.Analysts
                 .Include(a => a.Regiao)
-                .FirstOrDefault(predicate);
+                .FirstOrDefaultAsync(predicate);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace ApiMetasAnalistas.Repositories
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public override Analyst? GetReadOnly(Expression<Func<Analyst, bool>> predicate)
+        public override async Task<Analyst?> GetReadOnlyAsync(Expression<Func<Analyst, bool>> predicate)
         {
             return _context.Analysts
                 .AsNoTracking()
@@ -43,41 +43,41 @@ namespace ApiMetasAnalistas.Repositories
                 .FirstOrDefault(predicate);
         }
 
-        public Analyst? GetByUserName(string userName)
+        public async Task<Analyst?> GetByUserNameAsync(string userName)
         {
-            return _context.Analysts
+            return await _context.Analysts
                 .AsNoTracking()
                 .Include(a => a.Regiao)
-                .FirstOrDefault(a => a.Usuario == userName);
+                .FirstOrDefaultAsync(a => a.Usuario == userName);
         }
 
-        public bool HasOccurrences(int id)
+        public async Task<bool> HasOccurrencesAsync(int id)
         {
-            return _context.Occurrences.Any(o => o.AnalistaId == id);
+            return await _context.Occurrences.AnyAsync(o => o.AnalistaId == id);
         }
 
-        public bool HasTickets(int id)
+        public async Task<bool> HasTicketsAsync(int id)
         {
-            return _context.Tickets.Any(t => t.AnalystId == id);
+            return await _context.Tickets.AnyAsync(t => t.AnalystId == id);
         }
 
-        public bool IsHoliday(Analyst analyst, DateTime currentDate)
+        public async Task<bool> IsHolidayAsync(Analyst analyst, DateTime currentDate)
         {
-            return _context.Holidays
+            return await _context.Holidays
                     .Where(h => h.RegiaoId == analyst.RegiaoId || h.RegiaoId == 1) //Ambiente Nacional
-                    .Any(h => h.Data.Date == currentDate);
+                    .AnyAsync(h => h.Data.Date == currentDate);
         }
 
-        public int TicketCount(int id, DateTime startDate, DateTime endDate)
+        public async Task<int> TicketCountAsync(int id, DateTime startDate, DateTime endDate)
         {
-            return _context.Tickets
+            return await _context.Tickets
                         .Where(t => t.AnalystId == id && t.DataFechamento.Date >= startDate.Date && t.DataFechamento.Date <= endDate.Date)
-                        .Count();
+                        .CountAsync();
         }
 
-        public bool HasOccurrence(int id, DateTime occurrenceDate)
+        public async Task<bool> HasOccurrenceAsync(int id, DateTime occurrenceDate)
         {
-            return _context.Occurrences.Where(d => d.DataInicio >= occurrenceDate && d.DataFim <= occurrenceDate).Any(o => o.AnalistaId == id);
+            return await _context.Occurrences.Where(d => d.DataInicio >= occurrenceDate && d.DataFim <= occurrenceDate).AnyAsync(o => o.AnalistaId == id);
         }
 
 

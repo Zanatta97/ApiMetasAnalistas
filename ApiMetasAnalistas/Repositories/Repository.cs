@@ -14,19 +14,19 @@ namespace ApiMetasAnalistas.Repositories
             _context = context;
         }
 
-        public virtual IEnumerable<T> GetAll()
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            return _context.Set<T>().AsNoTracking().ToList();
+            return await _context.Set<T>().AsNoTracking().ToListAsync();
         }
 
-        public virtual T? Get(Expression<Func<T, bool>> predicate)
+        public virtual async Task<T?> GetAsync(Expression<Func<T, bool>> predicate)
         {
-            return _context.Set<T>().FirstOrDefault(predicate);
+            return await _context.Set<T>().FirstOrDefaultAsync(predicate);
         }
 
-        public virtual T? GetReadOnly(Expression<Func<T, bool>> predicate)
+        public virtual async Task<T?> GetReadOnlyAsync(Expression<Func<T, bool>> predicate)
         {
-            return _context.Set<T>().AsNoTracking().FirstOrDefault(predicate);
+            return await _context.Set<T>().AsNoTracking().FirstOrDefaultAsync(predicate);
         }
 
         public void Add(T entity)

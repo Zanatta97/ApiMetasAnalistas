@@ -11,19 +11,19 @@ namespace ApiMetasAnalistas.Services
         {
             _repository = repository;
         }
-        public IEnumerable<Region> GetAll()
+        public async Task<IEnumerable<Region>> GetAllAsync()
         {
-            return _repository.RegionRepository.GetAll();
+            return await _repository.RegionRepository.GetAllAsync();
         }
-        public Region? Get(int id)
+        public async Task<Region?> GetAsync(int id)
         {
-            return _repository.RegionRepository.Get(r => r.Id == id);
+            return await _repository.RegionRepository.GetAsync(r => r.Id == id);
         }
-        public Region? GetReadOnly(int id)
+        public async Task<Region?> GetReadOnlyAsync(int id)
         {
-            return _repository.RegionRepository.GetReadOnly(r => r.Id == id);
+            return await _repository.RegionRepository.GetReadOnlyAsync(r => r.Id == id);
         }
-        public Region Add(Region region)
+        public async Task<Region> AddAsync(Region region)
         {
             ArgumentNullException.ThrowIfNull(region);
 
@@ -35,7 +35,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.RegionRepository.Add(region);
-                _repository.Commit();
+                await _repository.Commit();
                 return region;
             }
             catch (DbUpdateException e)
@@ -44,11 +44,11 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public Region Update(int id, Region region)
+        public async Task<Region> UpdateAsync(int id, Region region)
         {
             ArgumentNullException.ThrowIfNull(region);
 
-            var existingRegion = _repository.RegionRepository.Get(r => r.Id == id);
+            var existingRegion = await _repository.RegionRepository.GetAsync(r => r.Id == id);
 
             if (existingRegion == null)
             {
@@ -60,7 +60,7 @@ namespace ApiMetasAnalistas.Services
                 existingRegion.Nome = region.Nome;
 
                 _repository.RegionRepository.Update(existingRegion);
-                _repository.Commit();
+                await _repository.Commit();
                 return existingRegion;
             }
             catch (DbUpdateException e)
@@ -69,9 +69,9 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var existingRegion = _repository.RegionRepository.Get(r => r.Id == id);
+            var existingRegion = await _repository.RegionRepository.GetAsync(r => r.Id == id);
 
             if (existingRegion == null)
             {
@@ -81,7 +81,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.RegionRepository.Delete(existingRegion);
-                _repository.Commit();
+                await _repository.Commit();
             }
             catch (DbUpdateException e)
             {

@@ -12,46 +12,46 @@ namespace ApiMetasAnalistas.Repositories
         {
         }
 
-        public override IEnumerable<Holiday> GetAll()
+        public override async Task<IEnumerable<Holiday>> GetAllAsync()
         {
-            return _context.Holidays.AsNoTracking().Include(a => a.Regiao).ToList();
+            return await _context.Holidays.AsNoTracking().Include(a => a.Regiao).ToListAsync();
         }
 
-        public override Holiday? Get(Expression<Func<Holiday, bool>> predicate)
+        public override async Task<Holiday?> GetAsync(Expression<Func<Holiday, bool>> predicate)
         {
-            return _context.Holidays.Include(a => a.Regiao).FirstOrDefault(predicate);
+            return await _context.Holidays.Include(a => a.Regiao).FirstOrDefaultAsync(predicate);
         }
 
-        public override Holiday? GetReadOnly(Expression<Func<Holiday, bool>> predicate)
+        public override async Task<Holiday?> GetReadOnlyAsync(Expression<Func<Holiday, bool>> predicate)
         {
-            return _context.Holidays.AsNoTracking().Include(a => a.Regiao).FirstOrDefault(predicate);
+            return await _context.Holidays.AsNoTracking().Include(a => a.Regiao).FirstOrDefaultAsync(predicate);
         }
 
-        public IEnumerable<Holiday> GetByDate(DateTime data)
+        public async Task<IEnumerable<Holiday>> GetByDateAsync(DateTime data)
         {
-            return _context.Holidays
+            return await _context.Holidays
                 .AsNoTracking()
                 .Include(a => a.Regiao)
                 .Where(h => h.Data.Date == data.Date)
-                .ToList();
+                .ToListAsync();
         }
 
-        public IEnumerable<Holiday> GetByPeriod(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Holiday>> GetByPeriodAsync(DateTime startDate, DateTime endDate)
         {
-            return _context.Holidays
+            return await _context.Holidays
                 .AsNoTracking()
                 .Include(a => a.Regiao)
                 .Where(h => h.Data.Date >= startDate && h.Data.Date <= endDate)
-                .ToList();
+                .ToListAsync();
         }
 
-        public IEnumerable<Holiday> GetByRegion(int regionId, DateTime data)
+        public async Task<IEnumerable<Holiday>> GetByRegionAsync(int regionId, DateTime data)
         {
-            return _context.Holidays
+            return await _context.Holidays
                 .AsNoTracking()
                 .Include(a => a.Regiao)
                 .Where(h => h.Data.Date == data.Date && h.RegiaoId == regionId)
-                .ToList();
+                .ToListAsync();
         }
     }
 }

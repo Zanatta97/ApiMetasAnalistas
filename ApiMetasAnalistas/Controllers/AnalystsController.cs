@@ -3,6 +3,7 @@ using ApiMetasAnalistas.Interfaces;
 using ApiMetasAnalistas.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Update;
 
 namespace ApiMetasAnalistas.Controllers
 {
@@ -26,9 +27,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AnalystResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<AnalystResponseDTO>> Get()
+        public async Task<ActionResult<IEnumerable<AnalystResponseDTO>>> Get()
         {
-            var analysts = _service.GetAll();
+            var analysts = await _service.GetAllAsync();
 
             if (!analysts.Any())
                 throw new KeyNotFoundException("Nenhum analista encontrado");
@@ -38,9 +39,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("{id:int}", Name = "GetAnalyst")]
         [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<AnalystResponseDTO> Get(int id)
+        public async Task<ActionResult<AnalystResponseDTO>> Get(int id)
         {
-            var analyst = _service.Get(id);
+            var analyst = await _service.GetAsync(id);
 
             if (analyst is null)
                 throw new KeyNotFoundException("Nenhum analista encontrado");
@@ -50,52 +51,54 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status201Created)]
-        public ActionResult<AnalystResponseDTO> Post(AnalystRequestDTO analyst)
+        public async Task<ActionResult<AnalystResponseDTO>> Post(AnalystRequestDTO analyst)
         {
             if (analyst is null)
                 throw new ArgumentNullException(nameof(analyst), "Analista inválido");
 
-            var newAnalyst = _service.Add(analyst.ToEntity()!);
+            var newAnalyst = await _service.AddAsync(analyst.ToEntity()!);
 
             return new CreatedAtRouteResult("GetAnalyst", new { id = newAnalyst.Id }, newAnalyst.ToDTO());
         }
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(AnalystResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<AnalystResponseDTO> Put(int id, AnalystRequestDTO analyst)
+        public async Task<ActionResult<AnalystResponseDTO>> Put(int id, AnalystRequestDTO analyst)
         {
             if (analyst is null)
                 throw new ArgumentNullException(nameof(analyst), "Analista inválido");
 
-            return Ok(_service.Update(id, analyst.ToEntity()!).ToDTO());         
+            var updatedAnalyst = await _service.UpdateAsync(id, analyst.ToEntity()!);
+
+            return Ok(updatedAnalyst.ToDTO());         
         }
 
         [HttpDelete("{id:int}")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            _service.Delete(id);
+            await _service.DeleteAsync(id);
 
             return Ok($"Analista de ID {id} deletado com sucesso");
         }
 
         [HttpGet("target/{id:int}", Name = "GetAnalystTarget")]
         [ProducesResponseType(typeof(AnalystResultDTO), StatusCodes.Status200OK)]
-        public ActionResult<AnalystResultDTO> GetAnalystTarget(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<AnalystResultDTO>> GetAnalystTarget(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var analyst = _service.Get(id);
+            var analyst = await _service.GetAsync(id);
 
             if (analyst is null)
                 throw new KeyNotFoundException("Nenhum analista encontrado");
 
-            var targetResult = _service.GetAnalystTargetResults(startDate, endDate, analyst);
+            var targetResult = await _service.GetAnalystTargetResultsAsync(startDate, endDate, analyst);
 
             return Ok(targetResult);
         }
 
         [HttpGet("target")]
         [ProducesResponseType(typeof(AnalystResultDTO), StatusCodes.Status200OK)]
-        public ActionResult<AnalystResultDTO> GetTargetResults([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<AnalystResultDTO>> GetTargetResults([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             if (startDate > endDate)
                 throw new ArgumentException("A data de início deve ser anterior à data de término");
@@ -103,17 +106,17 @@ namespace ApiMetasAnalistas.Controllers
             if (startDate == default || endDate == default)
                 throw new ArgumentException("Data informada inválida");
 
-            return Ok(_service.GetTargetResults(startDate, endDate));
+            return Ok(await _service.GetTargetResultsAsync(startDate, endDate));
         }
 
         [HttpGet("exists/{username}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public ActionResult<bool> UsernameExists(string username)
+        public async Task<ActionResult<bool>> UsernameExists(string username)
         {
             if (string.IsNullOrWhiteSpace(username))
                 throw new ArgumentException("O nome de usuário não pode ser vazio ou nulo", nameof(username));
 
-            var analyst = _service.GetByUserName(username);
+            var analyst = await _service.GetByUserNameAsync(username);
 
             return Ok(analyst is not null);
         }

@@ -14,22 +14,22 @@ namespace ApiMetasAnalistas.Services
             _repository = repository;
         }
 
-        public IEnumerable<Occurrence> GetAll()
+        public async Task<IEnumerable<Occurrence>> GetAllAsync()
         {
-            return _repository.OccurrenceRepository.GetAll();
+            return await _repository.OccurrenceRepository.GetAllAsync();
         }
 
-        public Occurrence? Get(int id)
+        public async Task<Occurrence?> GetAsync(int id)
         {
-            return _repository.OccurrenceRepository.Get(o => o.Id == id);
+            return await _repository.OccurrenceRepository.GetAsync(o => o.Id == id);
         }
 
-        public Occurrence? GetReadOnly(int id)
+        public async Task<Occurrence?> GetReadOnlyAsync(int id)
         {
-            return _repository.OccurrenceRepository.GetReadOnly(o => o.Id == id);
+            return await _repository.OccurrenceRepository.GetReadOnlyAsync(o => o.Id == id);
         }
 
-        public Occurrence Add(Occurrence occurrence)
+        public async Task<Occurrence> AddAsync(Occurrence occurrence)
         {
             ArgumentNullException.ThrowIfNull(occurrence);
 
@@ -57,7 +57,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.OccurrenceRepository.Add(occurrence);
-                _repository.Commit();
+                await _repository.Commit();
                 return occurrence;
             }
             catch (DbUpdateException e)
@@ -66,11 +66,11 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public Occurrence Update(int id, Occurrence occurrence)
+        public async Task<Occurrence> UpdateAsync(int id, Occurrence occurrence)
         {
             ArgumentNullException.ThrowIfNull(occurrence);
 
-            var existingOccurrence = _repository.OccurrenceRepository.Get(o => o.Id == id);
+            var existingOccurrence = await _repository.OccurrenceRepository.GetAsync(o => o.Id == id);
 
             if (existingOccurrence == null)
             {
@@ -86,7 +86,7 @@ namespace ApiMetasAnalistas.Services
                 existingOccurrence.DataFim = occurrence.DataFim;
 
                 _repository.OccurrenceRepository.Update(existingOccurrence);
-                _repository.Commit();
+                await _repository.Commit();
                 return existingOccurrence;
             }
             catch (DbUpdateException e)
@@ -95,9 +95,9 @@ namespace ApiMetasAnalistas.Services
             }
         } 
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var existingOccurrence = _repository.OccurrenceRepository.Get(o => o.Id == id);
+            var existingOccurrence = await _repository.OccurrenceRepository.GetAsync(o => o.Id == id);
 
             if (existingOccurrence == null)
             {
@@ -107,7 +107,7 @@ namespace ApiMetasAnalistas.Services
             try
             {
                 _repository.OccurrenceRepository.Delete(existingOccurrence);
-                _repository.Commit();
+                await _repository.Commit();
             }
             catch (DbUpdateException e)
             {
@@ -115,24 +115,24 @@ namespace ApiMetasAnalistas.Services
             }
         }
 
-        public IEnumerable<Occurrence> GetByAnalyst(int analystId)
+        public async Task<IEnumerable<Occurrence>> GetByAnalystAsync(int analystId)
         {
-            return _repository.OccurrenceRepository.GetByAnalyst(analystId);
+            return await _repository.OccurrenceRepository.GetByAnalystAsync(analystId);
         }
 
-        public IEnumerable<Occurrence> GetByAnalystPeriod(int analystId, DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Occurrence>> GetByAnalystPeriodAsync(int analystId, DateTime startDate, DateTime endDate)
         {
-            return _repository.OccurrenceRepository.GetByAnalystPeriod(analystId, startDate, endDate);
+            return await _repository.OccurrenceRepository.GetByAnalystPeriodAsync(analystId, startDate, endDate);
         }
 
-        public IEnumerable<Occurrence> GetByPeriod(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Occurrence>> GetByPeriodAsync(DateTime startDate, DateTime endDate)
         {
-            return _repository.OccurrenceRepository.GetByPeriod(startDate, endDate);
+            return await _repository.OccurrenceRepository.GetByPeriodAsync(startDate, endDate);
         }
 
-        public bool HasOcurrences(int id, DateTime occurrenceDate)
+        public async Task<bool> HasOcurrencesAsync(int id, DateTime occurrenceDate)
         {
-            return _repository.OccurrenceRepository.HasOcurrences(id, occurrenceDate);
+            return await _repository.OccurrenceRepository.HasOcurrencesAsync(id, occurrenceDate);
         }
 
     }

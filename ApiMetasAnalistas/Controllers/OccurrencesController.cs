@@ -25,9 +25,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<OccurrenceResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<OccurrenceResponseDTO>> Get()
+        public async Task<ActionResult<IEnumerable<OccurrenceResponseDTO>>> Get()
         {
-            var occurrences = _service.GetAll();
+            var occurrences = await _service.GetAllAsync();
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Nenhuma ocorrência cadastrada no sistema");
@@ -37,9 +37,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("{id:int}", Name = "GetOccurrence")]
         [ProducesResponseType(typeof(OccurrenceResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<OccurrenceResponseDTO> Get(int id)
+        public async Task<ActionResult<OccurrenceResponseDTO>> Get(int id)
         {
-            var occurrence = _service.GetReadOnly(id);
+            var occurrence = await _service.GetReadOnlyAsync(id);
 
             if (occurrence is null)
                 throw new KeyNotFoundException("Ocorrência não encontrada");
@@ -49,9 +49,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("analyst/{idAnalista:int}", Name = "GetByAnalyst")]
         [ProducesResponseType(typeof(IEnumerable<OccurrenceResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByAnalyst(int idAnalista)
+        public async Task<ActionResult<IEnumerable<OccurrenceResponseDTO>>> GetByAnalyst(int idAnalista)
         {
-            var occurrences = _service.GetByAnalyst(idAnalista);
+            var occurrences = await _service.GetByAnalystAsync(idAnalista);
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Nenhuma ocorrência encontrada para o analista especificado");
@@ -61,39 +61,41 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(OccurrenceResponseDTO), StatusCodes.Status201Created)]
-        public ActionResult<OccurrenceResponseDTO> Post(OccurrenceRequestDTO occurrence)
+        public async Task<ActionResult<OccurrenceResponseDTO>> Post(OccurrenceRequestDTO occurrence)
         {
             if (occurrence is null)
                 throw new ArgumentNullException("Ocorrência inválida");
 
-            var newOcurrence = _service.Add(occurrence.ToEntity()!);
+            var newOcurrence = await _service.AddAsync(occurrence.ToEntity()!);
 
             return new CreatedAtRouteResult("GetOccurrence", new { id = newOcurrence.Id }, newOcurrence.ToDTO());
         }
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(OccurrenceResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<OccurrenceResponseDTO> Put(int id, OccurrenceRequestDTO occurrence)
+        public async Task<ActionResult<OccurrenceResponseDTO>> Put(int id, OccurrenceRequestDTO occurrence)
         {
             if (occurrence is null)
                 throw new ArgumentNullException("Ocorrência inválida");
 
-            return Ok(_service.Update(id, occurrence.ToEntity()!).ToDTO());
+            var updatedOccurrence = await _service.UpdateAsync(id, occurrence.ToEntity()!);
+
+            return Ok(updatedOccurrence.ToDTO());
         }
 
         [HttpDelete("{id:int}")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            _service.Delete(id);
+            await _service.DeleteAsync(id);
 
             return Ok($"Ocorrência com ID {id} excluída com sucesso");
         }
 
         [HttpGet("period/")]
-        public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<IEnumerable<OccurrenceResponseDTO>>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var occurrences = _service.GetByPeriod(startDate, endDate);
+            var occurrences = await _service.GetByPeriodAsync(startDate, endDate);
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Nenhuma ocorrência cadastrada no período");
@@ -103,9 +105,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("period/{id:int}")]
         [ProducesResponseType(typeof(IEnumerable<OccurrenceResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<OccurrenceResponseDTO>> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<IEnumerable<OccurrenceResponseDTO>>> GetByAnalystPeriod(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var occurrences = _service.GetByAnalystPeriod(id, startDate, endDate);
+            var occurrences = await _service.GetByAnalystPeriodAsync(id, startDate, endDate);
 
             if (!occurrences.Any())
                 throw new KeyNotFoundException("Ocorrência não encontrada");
@@ -115,9 +117,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("hasOccurrence/{id:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public ActionResult<bool> HasOcurrences(int id, [FromQuery] DateTime occurrenceDate)
+        public async Task<ActionResult<bool>> HasOcurrences(int id, [FromQuery] DateTime occurrenceDate)
         {
-            var hasOcurrences = _service.HasOcurrences(id, occurrenceDate);
+            var hasOcurrences = await _service.HasOcurrencesAsync(id, occurrenceDate);
             return Ok(hasOcurrences);
         }
     }

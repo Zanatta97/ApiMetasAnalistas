@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace ApiMetasAnalistas.Models
 {
     [Table("analysts")]
-    [Index(nameof(Usuario), IsUnique = true)]
+    [Microsoft.EntityFrameworkCore.Index(nameof(Usuario), IsUnique = true)]
     public class Analyst
     {
         [Column("id")]

@@ -25,9 +25,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<HolidayResponseDTO>> Get()
+        public async Task<ActionResult<IEnumerable<HolidayResponseDTO>>> Get()
         {
-            var holidays = _service.GetAll();
+            var holidays = await _service.GetAllAsync();
 
             if (holidays is null)
                 throw new KeyNotFoundException("Nenhum feriado cadastrado no sistema");
@@ -37,9 +37,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("{id:int}", Name = "GetHoliday")]
         [ProducesResponseType(typeof(HolidayResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<HolidayResponseDTO> Get(int id)
+        public async Task<ActionResult<HolidayResponseDTO>> Get(int id)
         {
-            var holiday = _service.GetReadOnly(id);
+            var holiday = await _service.GetReadOnlyAsync(id);
 
             if (holiday is null)
                 throw new KeyNotFoundException("Feriado não encontrado");
@@ -49,9 +49,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("{data:datetime}", Name = "GetHolidayByDate")]
         [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<HolidayResponseDTO>> Get(DateTime data)
+        public async Task<ActionResult<IEnumerable<HolidayResponseDTO>>> Get(DateTime data)
         {
-            var holidays = _service.GetByDate(data);
+            var holidays = await _service.GetByDateAsync(data);
 
             if (!holidays.Any())
                 throw new KeyNotFoundException("Nenhum feriado encontrado para a data especificada");
@@ -61,9 +61,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("region/{regionId:int}")]
         [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<HolidayResponseDTO>> GetByRegion(int regionId, [FromQuery] DateTime date)
+        public async Task<ActionResult<IEnumerable<HolidayResponseDTO>>> GetByRegion(int regionId, [FromQuery] DateTime date)
         {
-            var holidays = _service.GetByRegion(regionId, date);
+            var holidays = await _service.GetByRegionAsync(regionId, date);
 
             if (!holidays.Any())
                 throw new KeyNotFoundException("Nenhum feriado encontrado para o período especificado");
@@ -73,9 +73,9 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpGet("period")]
         [ProducesResponseType(typeof(IEnumerable<HolidayResponseDTO>), StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<HolidayResponseDTO>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<IEnumerable<HolidayResponseDTO>>> GetByPeriod([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var holidays = _service.GetByPeriod(startDate, endDate);
+            var holidays = await _service.GetByPeriodAsync(startDate, endDate);
 
             if (!holidays.Any())
                 throw new KeyNotFoundException("Nenhum feriado encontrado para o período especificado");
@@ -85,31 +85,33 @@ namespace ApiMetasAnalistas.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(HolidayResponseDTO), StatusCodes.Status201Created)]
-        public ActionResult<HolidayResponseDTO> Post(HolidayRequestDTO holiday)
+        public async Task<ActionResult<HolidayResponseDTO>> Post(HolidayRequestDTO holiday)
         {
             if (holiday is null)
                 throw new ArgumentNullException("Feriado inválido");
                 
-            var newHoliday = _service.Add(holiday.ToEntity()!);
+            var newHoliday = await _service.AddAsync(holiday.ToEntity()!);
 
             return new CreatedAtRouteResult("GetHoliday", new { id = newHoliday.Id }, newHoliday.ToDTO());
         }
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(HolidayResponseDTO), StatusCodes.Status200OK)]
-        public ActionResult<HolidayResponseDTO> Put(int id, HolidayRequestDTO holiday)
+        public async Task<ActionResult<HolidayResponseDTO>> Put(int id, HolidayRequestDTO holiday)
         {
             if (holiday is null)
                 throw new ArgumentNullException("Feriado inválido");
 
-            return Ok(_service.Update(id, holiday.ToEntity()!).ToDTO());
+            var updatedHoliday = await _service.UpdateAsync(id, holiday.ToEntity()!);
+
+            return Ok(updatedHoliday.ToDTO());
         }
 
         [HttpDelete("{id:int}")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            _service.Delete(id);
+            await _service.DeleteAsync(id);
 
             return Ok($"Feriado de ID {id} deletado com sucesso");
         }
